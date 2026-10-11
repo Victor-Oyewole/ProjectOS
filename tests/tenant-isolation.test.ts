@@ -10,6 +10,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { beforeAll, describe, expect, it } from "vitest";
 import { seedFixtures, type Fixtures, type SchoolFixture } from "./fixtures";
+import { withNetworkRetry } from "./network-retry";
 
 let fx: Fixtures;
 
@@ -23,7 +24,7 @@ async function visibleCount(
   idColumn: string,
   id: string,
 ): Promise<number> {
-  const { data, error } = await client.from(table).select(idColumn).eq(idColumn, id);
+  const { data, error } = await withNetworkRetry(() => client.from(table).select(idColumn).eq(idColumn, id));
   if (error) throw new Error(`${table}.${idColumn} = ${id} query failed: ${error.message}`);
   return data?.length ?? 0;
 }

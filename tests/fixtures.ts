@@ -8,6 +8,7 @@
 // Every fixture row/user is named/emailed with a "QA Fixture" / ".invalid"
 // marker so it's unmistakably test data, never confused with a real school.
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import { withNetworkRetry } from "./network-retry";
 
 const SUPABASE_URL = requireEnv("NEXT_PUBLIC_SUPABASE_URL");
 const ANON_KEY = requireEnv("NEXT_PUBLIC_SUPABASE_ANON_KEY");
@@ -26,6 +27,7 @@ function requireEnv(name: string): string {
   return value;
 }
 
+
 export function adminClient(): SupabaseClient {
   return createClient(SUPABASE_URL, SERVICE_ROLE_KEY, {
     auth: { autoRefreshToken: false, persistSession: false },
@@ -38,21 +40,22 @@ async function ensureRow<T extends Record<string, unknown>>(
   match: Record<string, unknown>,
   insert: Record<string, unknown>,
 ): Promise<T> {
-  const { data: existing, error: selectError } = await admin
-    .from(table)
-    .select("*")
-    .match(match)
-    .maybeSingle();
+  // .limit(1) rather than .maybeSingle(): the match filter only needs to be
+  // specific enough to find "a" fixture row, not guarantee uniqueness --
+  // e.g. other tests (assignment-atomicity) can legitimately create
+  // additional real rows that also match a loose filter like {school_id,
+  // job_type}. Taking the first is fine for idempotent fixture seeding.
+  const { data: existingRows, error: selectError } = await withNetworkRetry(() =>
+    admin.from(table).select("*").match(match).limit(1),
+  );
   if (selectError) {
     throw new Error(`select ${table} (${JSON.stringify(match)}) failed: ${selectError.message}`);
   }
-  if (existing) return existing as T;
+  if (existingRows && existingRows.length > 0) return existingRows[0] as T;
 
-  const { data: created, error: insertError } = await admin
-    .from(table)
-    .insert(insert)
-    .select("*")
-    .single();
+  const { data: created, error: insertError } = await withNetworkRetry(() =>
+    admin.from(table).insert(insert).select("*").single(),
+  );
   if (insertError) {
     throw new Error(`insert ${table} (${JSON.stringify(insert)}) failed: ${insertError.message}`);
   }
@@ -68,7 +71,9 @@ async function ensureAuthUserId(admin: SupabaseClient, email: string): Promise<s
   const probe = createClient(SUPABASE_URL, ANON_KEY, {
     auth: { autoRefreshToken: false, persistSession: false },
   });
-  const { data, error } = await probe.auth.signInWithPassword({ email, password: FIXTURE_PASSWORD });
+  const { data, error } = await withNetworkRetry(() =>
+    probe.auth.signInWithPassword({ email, password: FIXTURE_PASSWORD }),
+  );
   if (!error && data.user) return data.user.id;
 
   const { data: created, error: createError } = await admin.auth.admin.createUser({
@@ -76,17 +81,30 @@ async function ensureAuthUserId(admin: SupabaseClient, email: string): Promise<s
     password: FIXTURE_PASSWORD,
     email_confirm: true,
   });
-  if (createError || !created.user) {
-    throw new Error(`createUser ${email} failed: ${createError?.message}`);
+  if (!createError && created.user) return created.user.id;
+
+  // Sign-in above failed (possibly on a network blip we exhausted retries
+  // on) and createUser says the user already exists -- it genuinely does;
+  // one more sign-in attempt resolves it rather than surfacing a confusing
+  // "already registered" error for what's really a transient network issue.
+  if (createError?.message?.includes("already been registered")) {
+    const retry = await withNetworkRetry(() =>
+      probe.auth.signInWithPassword({ email, password: FIXTURE_PASSWORD }),
+    );
+    if (!retry.error && retry.data.user) return retry.data.user.id;
+    throw new Error(`${email} exists but sign-in kept failing: ${retry.error?.message}`);
   }
-  return created.user.id;
+
+  throw new Error(`createUser ${email} failed: ${createError?.message}`);
 }
 
 async function freshSignIn(email: string): Promise<SupabaseClient> {
   const client = createClient(SUPABASE_URL, ANON_KEY, {
     auth: { autoRefreshToken: false, persistSession: false },
   });
-  const { data, error } = await client.auth.signInWithPassword({ email, password: FIXTURE_PASSWORD });
+  const { data, error } = await withNetworkRetry(() =>
+    client.auth.signInWithPassword({ email, password: FIXTURE_PASSWORD }),
+  );
   if (error || !data.user) {
     throw new Error(`signIn ${email} failed: ${error?.message}`);
   }
@@ -192,7 +210,12 @@ async function buildSchool(admin: SupabaseClient, label: "A" | "B"): Promise<Sch
     admin,
     "Guardian",
     { membership_id: familyMembership.membership_id },
-    { membership_id: familyMembership.membership_id, name: `QA Fixture Guardian ${label}`, relationship: "Mother" },
+    {
+      membership_id: familyMembership.membership_id,
+      name: `QA Fixture Guardian ${label}`,
+      relationship: "Mother",
+      contact_info: `qa-guardian-${label.toLowerCase()}@${EMAIL_DOMAIN}`,
+    },
   );
   const familyClientInstance = await freshSignIn(familyEmail);
 
