@@ -242,17 +242,15 @@ create policy "assessment_select_teacher_assigned" on "Assessment"
 -- Not a named Doc 6 permission on its own -- needed so a family's "View
 -- scores/results" can also resolve the assessment name/term a score belongs
 -- to, scoped to assessments their own children actually have a Score for.
+--
+-- Uses family_has_score_for_assessment() (migration 031) rather than a raw
+-- subquery on Score -- Score's own "score_all_teacher_assigned" policy
+-- subqueries Assessment right back, which Postgres detects as infinite
+-- recursion (42P17) regardless of role/data, same class of bug as
+-- SchoolEnrollment/ClassMembership (migration 030).
 create policy "assessment_select_own_children" on "Assessment"
   as permissive for select to authenticated
-  using (
-    exists (
-      select 1
-      from "Score" sc
-      join "SchoolEnrollment" se on se.enrollment_id = sc.enrollment_id
-      join "FamilyStudentRelationship" fsr on fsr.platform_student_id = se.platform_student_id
-      where sc.assessment_id = "Assessment".assessment_id and fsr.membership_id = auth_membership_id()
-    )
-  );
+  using (family_has_score_for_assessment("Assessment".assessment_id));
 
 create policy "assessment_all_platform_admin" on "Assessment"
   as permissive for all to authenticated

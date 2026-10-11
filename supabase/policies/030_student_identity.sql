@@ -35,17 +35,18 @@ create policy "schoolenrollment_all_admin" on "SchoolEnrollment"
 
 -- Doc 6: teacher sees students only within classes they're assigned to, not
 -- the whole school.
+--
+-- Uses teacher_assigned_to_enrollment_class() (migration 030) rather than a
+-- raw subquery on ClassMembership -- ClassMembership's own policies
+-- subquery SchoolEnrollment right back, and Postgres detects that as
+-- infinite recursion (42P17) regardless of role/data. The SECURITY DEFINER
+-- function breaks the cycle by not re-triggering ClassMembership's RLS.
 create policy "schoolenrollment_select_teacher_assigned_classes" on "SchoolEnrollment"
   as permissive for select to authenticated
   using (
     auth_app_role() = 'teacher'
     and school_id = auth_school_id()
-    and exists (
-      select 1 from "ClassMembership" cm
-      join "TeacherClassAssignment" tca on tca.class_id = cm.class_id
-      where cm.enrollment_id = "SchoolEnrollment".enrollment_id
-        and tca.teacher_id = auth_teacher_id()
-    )
+    and teacher_assigned_to_enrollment_class("SchoolEnrollment".enrollment_id)
   );
 
 create policy "schoolenrollment_select_own_children" on "SchoolEnrollment"
