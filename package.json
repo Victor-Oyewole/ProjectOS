@@ -1,0 +1,23 @@
+{
+  "name": "schoolos",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "supabase": "supabase",
+    "db:link": "supabase link --project-ref $SUPABASE_PROJECT_REF",
+    "db:push": "supabase db push",
+    "db:types": "supabase gen types typescript --linked > packages/db/src/generated-types.ts",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "dotenv": "^16.4.5",
+    "supabase": "^2.120.0",
+    "typescript": "^5.7.2",
+    "vitest": "^2.1.8"
+  }
+}
