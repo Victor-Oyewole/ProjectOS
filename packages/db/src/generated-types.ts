@@ -1388,6 +1388,17 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      assignment_atomicity_probe: {
+        Args: {
+          p_class_id: string
+          p_school_id: string
+          p_should_fail: boolean
+          p_subject_id: string
+          p_teacher_id: string
+          p_title: string
+        }
+        Returns: string
+      }
       auth_admin_id: { Args: never; Returns: string }
       auth_app_role: { Args: never; Returns: string }
       auth_membership_id: { Args: never; Returns: string }
@@ -1396,8 +1407,47 @@ export type Database = {
       auth_school_id: { Args: never; Returns: string }
       auth_teacher_id: { Args: never; Returns: string }
       custom_access_token_hook: { Args: { event: Json }; Returns: Json }
+      family_has_score_for_assessment: {
+        Args: { p_assessment_id: string }
+        Returns: boolean
+      }
+      find_platform_student_candidates: {
+        Args: { p_dob: string; p_guardian_contacts?: string[]; p_name: string }
+        Returns: {
+          confidence: string
+          dob: string
+          name: string
+          platform_student_id: string
+        }[]
+      }
       generate_platform_student_id: { Args: never; Returns: string }
       is_platform_admin: { Args: never; Returns: boolean }
+      register_school: {
+        Args: {
+          p_admin_contact?: string
+          p_admin_name: string
+          p_country: string
+          p_currency?: string
+          p_school_name: string
+          p_timezone?: string
+        }
+        Returns: string
+      }
+      resolve_or_create_platform_student: {
+        Args: {
+          p_decision: string
+          p_dob: string
+          p_matched_platform_student_id?: string
+          p_name: string
+        }
+        Returns: string
+      }
+      show_limit: { Args: never; Returns: number }
+      show_trgm: { Args: { "": string }; Returns: string[] }
+      teacher_assigned_to_enrollment_class: {
+        Args: { p_enrollment_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
       [_ in never]: never
