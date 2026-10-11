@@ -52,11 +52,9 @@ describe("identity matching: no match -> new PlatformStudent", () => {
     expect(newId).not.toBe(fx.schoolA.platformStudentId);
     expect(newId).not.toBe(fx.schoolB.platformStudentId);
 
-    const { data: created } = await fx.admin
-      .from("PlatformStudent")
-      .select("platform_student_id, name, dob")
-      .eq("platform_student_id", newId)
-      .single();
+    const { data: created } = await withNetworkRetry(() =>
+      fx.admin.from("PlatformStudent").select("platform_student_id, name, dob").eq("platform_student_id", newId).single(),
+    );
     expect(created?.name).toBe(uniqueName);
   });
 });
@@ -67,17 +65,17 @@ describe("identity matching: HIGH confidence match -> admin can reuse, not dupli
     // has a guardian (fx.schoolA's FamilyMembership/Guardian row) whose
     // contact_info we don't have directly in the fixture object, so fetch it
     // to build a realistic "same family re-registering" scenario.
-    const { data: guardian } = await fx.admin
-      .from("Guardian")
-      .select("contact_info")
-      .eq("membership_id", fx.schoolA.membershipId)
-      .single();
+    const { data: guardian } = await withNetworkRetry(() =>
+      fx.admin.from("Guardian").select("contact_info").eq("membership_id", fx.schoolA.membershipId).single(),
+    );
 
-    const { data, error } = await fx.schoolA.adminClient.rpc("find_platform_student_candidates", {
-      p_name: "QA Fixture Student A", // exact match -> similarity 1.0
-      p_dob: "2015-06-01",
-      p_guardian_contacts: guardian?.contact_info ? [guardian.contact_info] : [],
-    });
+    const { data, error } = await withNetworkRetry(() =>
+      fx.schoolA.adminClient.rpc("find_platform_student_candidates", {
+        p_name: "QA Fixture Student A", // exact match -> similarity 1.0
+        p_dob: "2015-06-01",
+        p_guardian_contacts: guardian?.contact_info ? [guardian.contact_info] : [],
+      }),
+    );
     expect(error).toBeNull();
     const match = (data ?? []).find((r: any) => r.platform_student_id === fx.schoolA.platformStudentId);
     expect(match).toBeDefined();
@@ -85,28 +83,36 @@ describe("identity matching: HIGH confidence match -> admin can reuse, not dupli
   });
 
   it("confirming the match reuses the existing platform_student_id -- no duplicate is created", async () => {
-    const before = await fx.admin.from("PlatformStudent").select("platform_student_id", { count: "exact", head: true });
+    const before = await withNetworkRetry(() =>
+      fx.admin.from("PlatformStudent").select("platform_student_id", { count: "exact", head: true }),
+    );
 
-    const { data: resolvedId, error } = await fx.schoolA.adminClient.rpc("resolve_or_create_platform_student", {
-      p_name: "QA Fixture Student A",
-      p_dob: "2015-06-01",
-      p_decision: "confirm_match",
-      p_matched_platform_student_id: fx.schoolA.platformStudentId,
-    });
+    const { data: resolvedId, error } = await withNetworkRetry(() =>
+      fx.schoolA.adminClient.rpc("resolve_or_create_platform_student", {
+        p_name: "QA Fixture Student A",
+        p_dob: "2015-06-01",
+        p_decision: "confirm_match",
+        p_matched_platform_student_id: fx.schoolA.platformStudentId,
+      }),
+    );
     expect(error).toBeNull();
     expect(resolvedId).toBe(fx.schoolA.platformStudentId);
 
-    const after = await fx.admin.from("PlatformStudent").select("platform_student_id", { count: "exact", head: true });
+    const after = await withNetworkRetry(() =>
+      fx.admin.from("PlatformStudent").select("platform_student_id", { count: "exact", head: true }),
+    );
     expect(after.count).toBe(before.count);
   });
 
   it("confirming the match is logged to AuditLog", async () => {
-    const { data, error } = await fx.admin
-      .from("AuditLog")
-      .select("action_type, target_entity, target_id")
-      .eq("school_id", fx.schoolA.schoolId)
-      .eq("action_type", "identity_resolution_confirm_match")
-      .eq("target_id", fx.schoolA.platformStudentId);
+    const { data, error } = await withNetworkRetry(() =>
+      fx.admin
+        .from("AuditLog")
+        .select("action_type, target_entity, target_id")
+        .eq("school_id", fx.schoolA.schoolId)
+        .eq("action_type", "identity_resolution_confirm_match")
+        .eq("target_id", fx.schoolA.platformStudentId),
+    );
     expect(error).toBeNull();
     expect((data ?? []).length).toBeGreaterThanOrEqual(1);
   });
@@ -114,21 +120,25 @@ describe("identity matching: HIGH confidence match -> admin can reuse, not dupli
 
 describe("identity matching: role restriction", () => {
   it("teacher cannot call resolve_or_create_platform_student", async () => {
-    const { error } = await fx.schoolA.teacherClient.rpc("resolve_or_create_platform_student", {
-      p_name: "Should Not Work",
-      p_dob: "2020-01-01",
-      p_decision: "new",
-      p_matched_platform_student_id: null,
-    });
+    const { error } = await withNetworkRetry(() =>
+      fx.schoolA.teacherClient.rpc("resolve_or_create_platform_student", {
+        p_name: "Should Not Work",
+        p_dob: "2020-01-01",
+        p_decision: "new",
+        p_matched_platform_student_id: null,
+      }),
+    );
     expect(error).not.toBeNull();
   });
 
   it("family cannot search identity candidates", async () => {
-    const { error } = await fx.schoolA.familyClient.rpc("find_platform_student_candidates", {
-      p_name: "Should Not Work",
-      p_dob: "2020-01-01",
-      p_guardian_contacts: [],
-    });
+    const { error } = await withNetworkRetry(() =>
+      fx.schoolA.familyClient.rpc("find_platform_student_candidates", {
+        p_name: "Should Not Work",
+        p_dob: "2020-01-01",
+        p_guardian_contacts: [],
+      }),
+    );
     expect(error).not.toBeNull();
   });
 });
