@@ -64,5 +64,19 @@ export async function registerSchool(formData: FormData): Promise<{ error: strin
     return { error: registerError.message };
   }
 
-  redirect("/register/success");
+  // The session minted at sign-in above has no app_role/school_id claim --
+  // custom_access_token_hook only assigns one from an EXISTING SchoolAdmin
+  // row, and that row didn't exist until register_school just created it.
+  // Signing in again mints a fresh JWT that reflects it (same fix as
+  // tests/fixtures.ts's freshSignIn pattern); without this,
+  // /academic-setup's auth guard sees no app_role and bounces to /login.
+  const { error: refreshError } = await supabase.auth.signInWithPassword({ email, password });
+  if (refreshError) {
+    return { error: refreshError.message };
+  }
+
+  // Doc 24 Section 2 step 7: "Proceeds directly into existing Doc 12 flow:
+  // academic setup -> people setup..." -- straight into Step 2, not a
+  // separate confirmation screen.
+  redirect("/academic-setup");
 }

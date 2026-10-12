@@ -17,6 +17,9 @@ export default function HomePage() {
       >
         Register your school
       </Link>
+      <Link href="/login" className="text-sm text-slate-600 underline hover:text-slate-900">
+        Already registered? Log in
+      </Link>
     </main>
   );
 }
