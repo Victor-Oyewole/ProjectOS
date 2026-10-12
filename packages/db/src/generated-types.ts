@@ -1388,6 +1388,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_create_family_person: {
+        Args: { p_contact_info?: string; p_name: string }
+        Returns: string
+      }
       assignment_atomicity_probe: {
         Args: {
           p_class_id: string

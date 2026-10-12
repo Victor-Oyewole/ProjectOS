@@ -1,5 +1,6 @@
 import { createServerClient, getSessionClaims } from "@schoolos/db";
 import { redirect } from "next/navigation";
+import Link from "next/link";
 import { NewSessionForm, NewTermForm, NewClassForm, NewSubjectForm } from "./forms";
 
 // Doc 12 Step 2: Academic Setup -- "required before people can be added."
@@ -96,6 +97,13 @@ export default async function AcademicSetupPage() {
         </ul>
         <NewSubjectForm />
       </section>
+
+      <Link
+        href="/people/teachers"
+        className="self-start rounded-md bg-slate-900 px-6 py-3 font-medium text-white hover:bg-slate-700"
+      >
+        Save &amp; continue to people setup
+      </Link>
     </main>
   );
 }

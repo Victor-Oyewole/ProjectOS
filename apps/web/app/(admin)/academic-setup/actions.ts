@@ -1,6 +1,6 @@
 "use server";
 
-import { createServerClient, getSessionClaims } from "@schoolos/db";
+import { requireAdminSchoolId } from "@schoolos/db";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
@@ -10,14 +10,6 @@ import { z } from "zod";
 // auth_app_role() = 'admin' AND school_id = auth_school_id()) -- unlike
 // registration, no SECURITY DEFINER bootstrap function is needed here, the
 // admin already has a real session by this point.
-async function requireAdminSchoolId() {
-  const supabase = await createServerClient();
-  const claims = await getSessionClaims(supabase);
-  if (claims?.app_role !== "admin" || !claims.school_id) {
-    throw new Error("Not signed in as a school admin.");
-  }
-  return { supabase, schoolId: claims.school_id };
-}
 
 const SessionSchema = z.object({
   name: z.string().trim().min(1, "Session name is required"),

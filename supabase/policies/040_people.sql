@@ -5,6 +5,13 @@
 -- the custom_access_token_hook migration (needed so supabase_auth_admin can
 -- read them); the policies below are additive, for the ordinary
 -- authenticated roles.
+--
+-- Deliberately no admin INSERT policy on Person: it's platform-level like
+-- PlatformStudent, not school-scoped, so a flat school_id-based policy
+-- isn't the right fit. An admin manually adding a family creates the
+-- Person row via admin_create_family_person() (migration 035), a SECURITY
+-- DEFINER bootstrap function, same pattern as
+-- resolve_or_create_platform_student (migration 032).
 
 create policy "schooladmin_select_own_school" on "SchoolAdmin"
   as permissive for select to authenticated
