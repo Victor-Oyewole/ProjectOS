@@ -1432,6 +1432,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_add_second_admin: {
+        Args: { p_contact_info?: string; p_name: string }
+        Returns: Json
+      }
       admin_add_teacher: {
         Args: { p_contact_info?: string; p_name: string; p_staff_id?: string }
         Returns: Json
@@ -1446,6 +1450,10 @@ export type Database = {
       admin_generate_activation_code: {
         Args: { p_target_entity: string; p_target_id: string }
         Returns: string
+      }
+      admin_remove_second_admin: {
+        Args: { p_admin_id: string }
+        Returns: undefined
       }
       assignment_atomicity_probe: {
         Args: {

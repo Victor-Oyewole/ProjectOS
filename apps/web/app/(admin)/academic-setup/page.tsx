@@ -99,10 +99,10 @@ export default async function AcademicSetupPage() {
       </section>
 
       <Link
-        href="/people/teachers"
+        href="/admins"
         className="self-start rounded-md bg-slate-900 px-6 py-3 font-medium text-white hover:bg-slate-700"
       >
-        Save &amp; continue to people setup
+        Save &amp; continue
       </Link>
     </main>
   );
