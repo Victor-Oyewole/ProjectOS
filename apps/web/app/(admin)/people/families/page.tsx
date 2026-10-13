@@ -1,5 +1,6 @@
 import { createServerClient } from "@schoolos/db";
 import { FamilyForm } from "./family-form";
+import { FamilyCsvImport } from "./family-csv-import";
 
 export default async function FamiliesPage() {
   const supabase = await createServerClient();
@@ -34,6 +35,7 @@ export default async function FamiliesPage() {
         ) : null}
       </ul>
       <FamilyForm students={students} />
+      <FamilyCsvImport />
     </div>
   );
 }

@@ -1436,6 +1436,9 @@ export type Database = {
         Args: { p_contact_info?: string; p_name: string; p_staff_id?: string }
         Returns: Json
       }
+      admin_bulk_add_families: { Args: { p_rows: Json }; Returns: Json }
+      admin_bulk_add_students: { Args: { p_rows: Json }; Returns: Json }
+      admin_bulk_add_teachers: { Args: { p_rows: Json }; Returns: Json }
       admin_create_family_person: {
         Args: { p_contact_info?: string; p_name: string }
         Returns: Json
@@ -1467,6 +1470,14 @@ export type Database = {
         Returns: Json
       }
       custom_access_token_hook: { Args: { event: Json }; Returns: Json }
+      enroll_student_in_school: {
+        Args: {
+          p_class_id?: string
+          p_platform_student_id: string
+          p_school_id: string
+        }
+        Returns: string
+      }
       family_has_score_for_assessment: {
         Args: { p_assessment_id: string }
         Returns: boolean

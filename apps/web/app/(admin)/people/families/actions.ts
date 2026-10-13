@@ -3,6 +3,7 @@
 import { requireAdminSchoolId } from "@schoolos/db";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
+import { parseCsvWithHeader } from "@/lib/csv";
 
 // Doc 12 Step 4, Families tab. Person has no admin-insert RLS policy (it's
 // platform-level, see 040_people.sql's note) -- admin_create_family_person()
@@ -56,6 +57,59 @@ export async function addFamily(formData: FormData): Promise<{ error?: string }>
     });
     if (linkError) return { error: linkError.message };
   }
+
+  revalidatePath("/people/families");
+  return {};
+}
+
+// Doc 12 Step 4, "[Bulk Import CSV]". Expected columns: guardian_name
+// (required), relationship, contact_info (both optional). Doesn't support
+// linking students via CSV (Doc 12 doesn't specify how a families CSV
+// would cross-reference a students CSV) -- link students afterward via
+// the manual "Add family" form's checkboxes.
+export interface FamilyCsvRow {
+  rowNumber: number;
+  guardianName: string;
+  relationship: string;
+  contactInfo: string;
+  errors: string[];
+}
+
+export async function previewFamiliesCsv(csvText: string): Promise<{ error?: string; rows?: FamilyCsvRow[] }> {
+  const records = parseCsvWithHeader(csvText);
+  if (records.length === 0) return { error: "The file has no data rows." };
+
+  const rows: FamilyCsvRow[] = records.map((record, index) => {
+    const errors: string[] = [];
+    const guardianName = record.guardian_name ?? "";
+    if (!guardianName) errors.push("guardian_name is required");
+
+    return {
+      rowNumber: index + 2,
+      guardianName,
+      relationship: record.relationship ?? "",
+      contactInfo: record.contact_info ?? "",
+      errors,
+    };
+  });
+
+  return { rows };
+}
+
+export async function confirmFamiliesCsv(rows: FamilyCsvRow[]): Promise<{ error?: string }> {
+  if (rows.some((r) => r.errors.length > 0)) {
+    return { error: "Fix all row errors before confirming -- no records were created." };
+  }
+
+  const { supabase } = await requireAdminSchoolId();
+  const { error } = await supabase.rpc("admin_bulk_add_families", {
+    p_rows: rows.map((r) => ({
+      guardian_name: r.guardianName,
+      relationship: r.relationship || null,
+      contact_info: r.contactInfo || null,
+    })),
+  });
+  if (error) return { error: error.message };
 
   revalidatePath("/people/families");
   return {};

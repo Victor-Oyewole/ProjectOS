@@ -1,5 +1,6 @@
 import { createServerClient } from "@schoolos/db";
 import { StudentForm } from "./student-form";
+import { StudentCsvImport } from "./student-csv-import";
 
 export default async function StudentsPage() {
   const supabase = await createServerClient();
@@ -31,6 +32,7 @@ export default async function StudentsPage() {
         ) : null}
       </ul>
       <StudentForm classes={classes ?? []} />
+      <StudentCsvImport />
     </div>
   );
 }

@@ -3,6 +3,7 @@
 import { requireAdminSchoolId } from "@schoolos/db";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
+import { parseCsvWithHeader } from "@/lib/csv";
 
 // Doc 12 Step 4, Students tab. Two-phase flow matching Doc 23 Section 2's
 // identity-matching workflow: search first (never silently assume a name
@@ -47,68 +48,18 @@ export async function searchStudentCandidates(
 
 const ClassIdSchema = z.string().uuid().optional();
 
+// enroll_student_in_school (migration 041) -- shared with the CSV bulk
+// import path, which needed the same reuse-not-duplicate logic as one
+// atomic SQL function rather than duplicating it in TypeScript (the
+// previous version of this function) a second time.
 async function enrollStudent(platformStudentId: string, schoolId: string, classId?: string | null) {
   const { supabase } = await requireAdminSchoolId();
-
-  // A confirmed identity match can point at a student already enrolled
-  // here -- the common case being "admin re-adds a student who's already
-  // in the system" (Doc 23 Section 2's whole point). Reuse the existing
-  // active enrollment rather than creating a second one for the same
-  // (platform_student_id, school_id) pair; idx_schoolenrollment_one_active_per_school
-  // (migration 036) also enforces this at the DB level as a backstop.
-  const { data: existing } = await supabase
-    .from("SchoolEnrollment")
-    .select("enrollment_id")
-    .eq("platform_student_id", platformStudentId)
-    .eq("school_id", schoolId)
-    .eq("status", "Active")
-    .maybeSingle();
-
-  let enrollment = existing;
-  if (!enrollment) {
-    const { data: created, error: enrollError } = await supabase
-      .from("SchoolEnrollment")
-      .insert({
-        platform_student_id: platformStudentId,
-        school_id: schoolId,
-        start_date: new Date().toISOString().slice(0, 10),
-        status: "Active",
-      })
-      .select("enrollment_id")
-      .single();
-    if (enrollError) return { error: enrollError.message };
-    enrollment = created;
-  }
-
-  if (classId) {
-    const { data: klass } = await supabase.from("Class").select("class_id").eq("class_id", classId).maybeSingle();
-    const { data: session } = await supabase
-      .from("AcademicSession")
-      .select("session_id")
-      .eq("school_id", schoolId)
-      .order("start_date", { ascending: false })
-      .limit(1)
-      .maybeSingle();
-    if (klass && session) {
-      // Same reuse-not-duplicate reasoning as the enrollment above: a
-      // reused enrollment can already have this class membership.
-      const { data: existingMembership } = await supabase
-        .from("ClassMembership")
-        .select("membership_id")
-        .eq("enrollment_id", enrollment.enrollment_id)
-        .eq("class_id", klass.class_id)
-        .maybeSingle();
-      if (!existingMembership) {
-        const { error: membershipError } = await supabase.from("ClassMembership").insert({
-          enrollment_id: enrollment.enrollment_id,
-          class_id: klass.class_id,
-          academic_session_id: session.session_id,
-          start_date: new Date().toISOString().slice(0, 10),
-        });
-        if (membershipError) return { error: membershipError.message };
-      }
-    }
-  }
+  const { error } = await supabase.rpc("enroll_student_in_school", {
+    p_platform_student_id: platformStudentId,
+    p_school_id: schoolId,
+    p_class_id: classId ?? undefined,
+  });
+  if (error) return { error: error.message };
 
   revalidatePath("/people/students");
   return {};
@@ -150,4 +101,115 @@ export async function confirmStudentMatch(
   if (error) return { error: error.message };
 
   return enrollStudent(platformStudentId, schoolId, parsedClassId.data);
+}
+
+// Doc 12 Step 4, Students "[Bulk Import CSV]". Columns: name, dob (required),
+// class (optional, matched by name against this school's existing Classes --
+// "Student CSV import maps to Classes if a class column is included," Doc
+// 12). An unmatched class name is a WARNING, not a blocking error ("Missing
+// referenced entities... flagged as warning with inline resolution option,"
+// Doc 12) -- the row still imports, just without a class assignment.
+//
+// Doc 23 Section 2's identity-matching workflow applies per row: HIGH/MEDIUM
+// candidates must be surfaced for explicit admin confirm-or-reject right in
+// the preview table (Doc 12: "matches requiring admin review are surfaced in
+// the CSV preview UI... not processed silently in the batch insert"), so
+// `decision` starts null for those rows and confirmStudentsCsv refuses to
+// run until every row has one.
+export interface StudentCsvRow {
+  rowNumber: number;
+  name: string;
+  dob: string;
+  className: string;
+  classId: string | null;
+  errors: string[];
+  warnings: string[];
+  candidates: StudentCandidate[];
+  decision: "new" | "confirm_match" | null;
+  matchedPlatformStudentId: string | null;
+}
+
+export async function previewStudentsCsv(
+  csvText: string,
+): Promise<{ error?: string; rows?: StudentCsvRow[] }> {
+  const { supabase, schoolId } = await requireAdminSchoolId();
+  const records = parseCsvWithHeader(csvText);
+  if (records.length === 0) return { error: "The file has no data rows." };
+
+  const { data: classes } = await supabase.from("Class").select("class_id, name").eq("school_id", schoolId);
+  const classByName = new Map((classes ?? []).map((c) => [c.name.trim().toLowerCase(), c.class_id]));
+
+  const rows: StudentCsvRow[] = [];
+  for (const [index, record] of records.entries()) {
+    const errors: string[] = [];
+    const warnings: string[] = [];
+    const name = record.name ?? "";
+    const dob = record.dob ?? "";
+    const className = record.class ?? "";
+
+    if (!name) errors.push("name is required");
+    if (!dob) errors.push("dob is required");
+
+    let classId: string | null = null;
+    if (className) {
+      const matched = classByName.get(className.trim().toLowerCase());
+      if (matched) classId = matched;
+      else warnings.push(`Class "${className}" not found -- row will import without a class`);
+    }
+
+    let candidates: StudentCandidate[] = [];
+    let decision: "new" | "confirm_match" | null = "new";
+    if (name && dob) {
+      const { data, error } = await supabase.rpc("find_platform_student_candidates", {
+        p_name: name,
+        p_dob: dob,
+        p_guardian_contacts: [],
+      });
+      if (error) {
+        errors.push(error.message);
+      } else {
+        candidates = (data ?? []).filter((c) => c.confidence !== "LOW") as StudentCandidate[];
+        if (candidates.length > 0) decision = null;
+      }
+    }
+
+    rows.push({
+      rowNumber: index + 2,
+      name,
+      dob,
+      className,
+      classId,
+      errors,
+      warnings,
+      candidates,
+      decision,
+      matchedPlatformStudentId: null,
+    });
+  }
+
+  return { rows };
+}
+
+export async function confirmStudentsCsv(rows: StudentCsvRow[]): Promise<{ error?: string }> {
+  if (rows.some((r) => r.errors.length > 0)) {
+    return { error: "Fix all row errors before confirming -- no records were created." };
+  }
+  if (rows.some((r) => r.decision === null)) {
+    return { error: "Resolve every ambiguous match before confirming -- no records were created." };
+  }
+
+  const { supabase } = await requireAdminSchoolId();
+  const { error } = await supabase.rpc("admin_bulk_add_students", {
+    p_rows: rows.map((r) => ({
+      name: r.name,
+      dob: r.dob,
+      decision: r.decision,
+      matched_platform_student_id: r.matchedPlatformStudentId,
+      class_id: r.classId,
+    })),
+  });
+  if (error) return { error: error.message };
+
+  revalidatePath("/people/students");
+  return {};
 }
