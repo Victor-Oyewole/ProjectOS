@@ -1,0 +1,57 @@
+"use client";
+
+import { useActionState } from "react";
+import { activate } from "./actions";
+
+export function ActivateForm({ code }: { code: string }) {
+  const [state, formAction, isPending] = useActionState(
+    async (_prev: { error: string } | null, formData: FormData) => {
+      const result = await activate(formData);
+      return result ?? null;
+    },
+    null,
+  );
+
+  return (
+    <form action={formAction} className="flex w-full max-w-md flex-col gap-4">
+      <input type="hidden" name="code" value={code} />
+
+      <div className="flex flex-col gap-1">
+        <label htmlFor="email" className="text-sm font-medium">
+          Email
+        </label>
+        <input
+          id="email"
+          name="email"
+          type="email"
+          required
+          className="rounded-md border border-slate-300 px-3 py-2"
+        />
+      </div>
+
+      <div className="flex flex-col gap-1">
+        <label htmlFor="password" className="text-sm font-medium">
+          Create a password
+        </label>
+        <input
+          id="password"
+          name="password"
+          type="password"
+          minLength={8}
+          required
+          className="rounded-md border border-slate-300 px-3 py-2"
+        />
+      </div>
+
+      {state?.error ? <p className="text-sm text-red-600">{state.error}</p> : null}
+
+      <button
+        type="submit"
+        disabled={isPending}
+        className="mt-2 rounded-md bg-slate-900 px-6 py-3 font-medium text-white hover:bg-slate-700 disabled:opacity-60"
+      >
+        {isPending ? "Activating…" : "Activate account"}
+      </button>
+    </form>
+  );
+}

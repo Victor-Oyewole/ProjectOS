@@ -71,6 +71,50 @@ export type Database = {
           },
         ]
       }
+      ActivationCode: {
+        Row: {
+          activation_code_id: string
+          code: string
+          created_at: string
+          expires_at: string
+          revoked_at: string | null
+          school_id: string
+          target_entity: string
+          target_id: string
+          used_at: string | null
+        }
+        Insert: {
+          activation_code_id?: string
+          code: string
+          created_at?: string
+          expires_at: string
+          revoked_at?: string | null
+          school_id: string
+          target_entity: string
+          target_id: string
+          used_at?: string | null
+        }
+        Update: {
+          activation_code_id?: string
+          code?: string
+          created_at?: string
+          expires_at?: string
+          revoked_at?: string | null
+          school_id?: string
+          target_entity?: string
+          target_id?: string
+          used_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ActivationCode_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "School"
+            referencedColumns: ["school_id"]
+          },
+        ]
+      }
       Assessment: {
         Row: {
           assessment_id: string
@@ -1388,8 +1432,16 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_add_teacher: {
+        Args: { p_contact_info?: string; p_name: string; p_staff_id?: string }
+        Returns: Json
+      }
       admin_create_family_person: {
         Args: { p_contact_info?: string; p_name: string }
+        Returns: Json
+      }
+      admin_generate_activation_code: {
+        Args: { p_target_entity: string; p_target_id: string }
         Returns: string
       }
       assignment_atomicity_probe: {
@@ -1410,6 +1462,10 @@ export type Database = {
       auth_platform_admin_id: { Args: never; Returns: string }
       auth_school_id: { Args: never; Returns: string }
       auth_teacher_id: { Args: never; Returns: string }
+      consume_activation_code: {
+        Args: { p_auth_user_id: string; p_code: string }
+        Returns: Json
+      }
       custom_access_token_hook: { Args: { event: Json }; Returns: Json }
       family_has_score_for_assessment: {
         Args: { p_assessment_id: string }
@@ -1452,6 +1508,7 @@ export type Database = {
         Args: { p_enrollment_id: string }
         Returns: boolean
       }
+      validate_activation_code: { Args: { p_code: string }; Returns: Json }
     }
     Enums: {
       [_ in never]: never

@@ -25,6 +25,12 @@ export default async function PeopleLayout({ children }: { children: React.React
         </Link>
       </nav>
       {children}
+      <Link
+        href="/activations"
+        className="self-start rounded-md bg-slate-900 px-6 py-3 font-medium text-white hover:bg-slate-700"
+      >
+        Save &amp; continue to distribute activations
+      </Link>
     </main>
   );
 }

@@ -4,12 +4,12 @@ import { requireAdminSchoolId } from "@schoolos/db";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
-// Doc 12 Step 4, Teachers tab, "+ Add Manually". Plain RLS-scoped insert
-// (teacher_all_admin in 040_people.sql already permits
-// auth_app_role() = 'admin' AND school_id = auth_school_id()) -- no
-// activation_status is set here, it defaults to 'Pending' (schema default);
-// auth_user_id stays null until the teacher actually activates (Doc 12
-// Step 5, not built yet).
+// Doc 12 Step 4, Teachers tab, "+ Add Manually". admin_add_teacher()
+// (migration 040) creates the Teacher row AND generates its activation
+// code ("on confirm: activation codes generated per person," Doc 12 Step
+// 4) in one Postgres transaction -- a previous two-call version (plain
+// insert, then a separate RPC) left an orphaned Teacher row with no code
+// whenever the second call failed, since nothing rolled back the first.
 const TeacherSchema = z.object({
   name: z.string().trim().min(1, "Name is required"),
   staffId: z.string().trim().optional(),
@@ -24,12 +24,11 @@ export async function addTeacher(formData: FormData): Promise<{ error?: string }
   });
   if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "Invalid input" };
 
-  const { supabase, schoolId } = await requireAdminSchoolId();
-  const { error } = await supabase.from("Teacher").insert({
-    school_id: schoolId,
-    name: parsed.data.name,
-    staff_id: parsed.data.staffId ?? null,
-    contact_info: parsed.data.contactInfo ?? null,
+  const { supabase } = await requireAdminSchoolId();
+  const { error } = await supabase.rpc("admin_add_teacher", {
+    p_name: parsed.data.name,
+    p_staff_id: parsed.data.staffId,
+    p_contact_info: parsed.data.contactInfo,
   });
   if (error) return { error: error.message };
 
