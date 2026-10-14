@@ -5,7 +5,7 @@ import Link from "next/link";
 // Doc 13 #4 Screen 4: "Tabs: Assignments / Attendance / Results / Daily
 // Notes / Academic History." Academic History is transfer-record history
 // (Doc 7/Milestone 5) -- not built yet, left off this nav rather than
-// shown as a dead tab. Fee Status (Screen 6) is Milestone 4.
+// shown as a dead tab. Fees (Screen 6) is Milestone 4, now built.
 //
 // No explicit ownership check here beyond what each page's own query
 // returns -- SchoolEnrollment/ClassMembership/etc. RLS already scopes every
@@ -56,6 +56,9 @@ export default async function ChildLayout({
         </Link>
         <Link href={`${base}/daily-notes`} className="px-1 pb-3 hover:text-slate-900">
           Daily notes
+        </Link>
+        <Link href={`${base}/fees`} className="px-1 pb-3 hover:text-slate-900">
+          Fees
         </Link>
       </nav>
       {children}

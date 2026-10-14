@@ -734,6 +734,8 @@ export type Database = {
           fee_record_id: string
           last_updated_at: string
           last_updated_by: string | null
+          notes: string | null
+          payment_date: string | null
           payment_method: string | null
           status: string
           term_id: string
@@ -746,6 +748,8 @@ export type Database = {
           fee_record_id?: string
           last_updated_at?: string
           last_updated_by?: string | null
+          notes?: string | null
+          payment_date?: string | null
           payment_method?: string | null
           status?: string
           term_id: string
@@ -758,6 +762,8 @@ export type Database = {
           fee_record_id?: string
           last_updated_at?: string
           last_updated_by?: string | null
+          notes?: string | null
+          payment_date?: string | null
           payment_method?: string | null
           status?: string
           term_id?: string

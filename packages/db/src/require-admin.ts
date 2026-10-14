@@ -13,5 +13,5 @@ export async function requireAdminSchoolId() {
   if (claims?.app_role !== "admin" || !claims.school_id) {
     throw new Error("Not signed in as a school admin.");
   }
-  return { supabase, schoolId: claims.school_id };
+  return { supabase, schoolId: claims.school_id, adminId: claims.admin_id };
 }

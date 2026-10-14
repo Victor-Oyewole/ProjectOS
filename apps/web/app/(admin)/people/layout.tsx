@@ -14,9 +14,14 @@ export default async function PeopleLayout({ children }: { children: React.React
     <main className="mx-auto flex min-h-screen max-w-3xl flex-col gap-6 px-4 py-12">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-semibold">People setup</h1>
-        <Link href="/admins" className="text-sm font-medium text-slate-500 hover:text-slate-900">
-          Manage school admins
-        </Link>
+        <div className="flex gap-4">
+          <Link href="/fees" className="text-sm font-medium text-slate-500 hover:text-slate-900">
+            Fees
+          </Link>
+          <Link href="/admins" className="text-sm font-medium text-slate-500 hover:text-slate-900">
+            Manage school admins
+          </Link>
+        </div>
       </div>
       <nav className="flex gap-4 border-b border-slate-200 text-sm font-medium">
         <Link href="/people/teachers" className="px-1 pb-3 hover:text-slate-900">

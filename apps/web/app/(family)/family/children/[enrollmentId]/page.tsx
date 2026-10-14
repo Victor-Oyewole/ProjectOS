@@ -8,7 +8,7 @@ export default async function ChildOverviewPage({
   const { enrollmentId } = await params;
   const supabase = await createServerClient();
 
-  const [{ data: membership }, { data: recentAttendance }] = await Promise.all([
+  const [{ data: membership }, { data: recentAttendance }, { data: latestFee }] = await Promise.all([
     supabase
       .from("ClassMembership")
       .select("class_id, Class(name)")
@@ -21,6 +21,13 @@ export default async function ChildOverviewPage({
       .eq("enrollment_id", enrollmentId)
       .order("date", { ascending: false })
       .limit(5),
+    supabase
+      .from("FeeRecord")
+      .select("status, Term(name)")
+      .eq("enrollment_id", enrollmentId)
+      .order("last_updated_at", { ascending: false })
+      .limit(1)
+      .maybeSingle(),
   ]);
 
   let assignments: { title: string; Class: { name: string } | null; Subject: { name: string } | null }[] = [];
@@ -38,7 +45,22 @@ export default async function ChildOverviewPage({
 
   return (
     <div className="flex flex-col gap-6">
-      <p className="text-sm text-slate-600">Current class: {membership?.Class?.name ?? "—"}</p>
+      <div className="flex items-center gap-3">
+        <p className="text-sm text-slate-600">Current class: {membership?.Class?.name ?? "—"}</p>
+        {latestFee ? (
+          <span
+            className={`rounded-full px-2 py-0.5 text-xs font-medium ${
+              latestFee.status === "Paid"
+                ? "bg-green-100 text-green-800"
+                : latestFee.status === "Partial"
+                  ? "bg-amber-100 text-amber-800"
+                  : "bg-red-100 text-red-800"
+            }`}
+          >
+            Fees ({latestFee.Term?.name}): {latestFee.status}
+          </span>
+        ) : null}
+      </div>
 
       <section>
         <h2 className="text-lg font-medium">Latest assignments</h2>
