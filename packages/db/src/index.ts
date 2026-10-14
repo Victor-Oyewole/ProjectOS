@@ -4,4 +4,5 @@ export { createAdminClient } from "./admin-client";
 export { getSessionClaims } from "./session-claims";
 export type { SessionClaims } from "./session-claims";
 export { requireAdminSchoolId } from "./require-admin";
+export { requireTeacher } from "./require-teacher";
 export type { Database } from "./generated-types";

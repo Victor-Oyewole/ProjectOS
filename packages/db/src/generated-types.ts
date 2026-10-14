@@ -1527,6 +1527,21 @@ export type Database = {
         Args: { p_enrollment_id: string }
         Returns: boolean
       }
+      teacher_create_assignment: {
+        Args: {
+          p_available_at: string
+          p_class_id: string
+          p_due_at?: string
+          p_instructions?: string
+          p_subject_id: string
+          p_title: string
+        }
+        Returns: string
+      }
+      teacher_retract_assignment: {
+        Args: { p_assignment_id: string }
+        Returns: undefined
+      }
       validate_activation_code: { Args: { p_code: string }; Returns: Json }
     }
     Enums: {

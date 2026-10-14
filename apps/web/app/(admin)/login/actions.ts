@@ -28,7 +28,9 @@ export async function login(formData: FormData): Promise<{ error: string }> {
   if (claims?.app_role === "admin") {
     redirect("/academic-setup");
   }
-  // Teacher/family dashboards aren't built yet -- an admin is the only role
-  // this app has anywhere for a logged-in user to land right now.
+  if (claims?.app_role === "teacher") {
+    redirect("/teacher");
+  }
+  // Family dashboard isn't built yet (Milestone 3).
   redirect("/");
 }

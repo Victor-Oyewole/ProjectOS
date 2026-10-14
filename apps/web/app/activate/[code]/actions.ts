@@ -53,7 +53,7 @@ export async function activate(formData: FormData): Promise<{ error: string }> {
     return { error: signInError.message };
   }
 
-  const { error: consumeError } = await supabase.rpc("consume_activation_code", {
+  const { data: consumeResult, error: consumeError } = await supabase.rpc("consume_activation_code", {
     p_code: code,
     p_auth_user_id: created.user.id,
   });
@@ -70,5 +70,13 @@ export async function activate(formData: FormData): Promise<{ error: string }> {
     return { error: refreshError.message };
   }
 
+  const targetEntity = (consumeResult as { target_entity: string } | null)?.target_entity;
+  if (targetEntity === "SchoolAdmin") {
+    redirect("/academic-setup");
+  }
+  if (targetEntity === "Teacher") {
+    redirect("/teacher");
+  }
+  // Family dashboard isn't built yet (Milestone 3).
   redirect("/activate/success");
 }
