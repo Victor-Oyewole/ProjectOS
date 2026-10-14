@@ -31,6 +31,8 @@ export async function login(formData: FormData): Promise<{ error: string }> {
   if (claims?.app_role === "teacher") {
     redirect("/teacher");
   }
-  // Family dashboard isn't built yet (Milestone 3).
+  if (claims?.app_role === "family") {
+    redirect("/family");
+  }
   redirect("/");
 }

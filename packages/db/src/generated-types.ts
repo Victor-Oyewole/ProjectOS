@@ -1490,6 +1490,14 @@ export type Database = {
         Args: { p_assessment_id: string }
         Returns: boolean
       }
+      family_mark_assignment_status: {
+        Args: {
+          p_assignment_id: string
+          p_enrollment_id: string
+          p_status: string
+        }
+        Returns: undefined
+      }
       find_platform_student_candidates: {
         Args: { p_dob: string; p_guardian_contacts?: string[]; p_name: string }
         Returns: {

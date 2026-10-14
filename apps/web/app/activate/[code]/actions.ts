@@ -77,6 +77,5 @@ export async function activate(formData: FormData): Promise<{ error: string }> {
   if (targetEntity === "Teacher") {
     redirect("/teacher");
   }
-  // Family dashboard isn't built yet (Milestone 3).
-  redirect("/activate/success");
+  redirect("/family");
 }

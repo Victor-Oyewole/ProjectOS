@@ -5,4 +5,5 @@ export { getSessionClaims } from "./session-claims";
 export type { SessionClaims } from "./session-claims";
 export { requireAdminSchoolId } from "./require-admin";
 export { requireTeacher } from "./require-teacher";
+export { requireFamily } from "./require-family";
 export type { Database } from "./generated-types";
