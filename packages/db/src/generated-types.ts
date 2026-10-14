@@ -484,6 +484,67 @@ export type Database = {
           },
         ]
       }
+      ConsentRecord: {
+        Row: {
+          consent_id: string
+          consent_type: string
+          granted_at: string
+          jurisdiction: string
+          membership_id: string | null
+          method: string
+          platform_student_id: string
+          reference_document: string | null
+          revoked_at: string | null
+          school_id: string
+        }
+        Insert: {
+          consent_id?: string
+          consent_type: string
+          granted_at?: string
+          jurisdiction: string
+          membership_id?: string | null
+          method: string
+          platform_student_id: string
+          reference_document?: string | null
+          revoked_at?: string | null
+          school_id: string
+        }
+        Update: {
+          consent_id?: string
+          consent_type?: string
+          granted_at?: string
+          jurisdiction?: string
+          membership_id?: string | null
+          method?: string
+          platform_student_id?: string
+          reference_document?: string | null
+          revoked_at?: string | null
+          school_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ConsentRecord_membership_id_fkey"
+            columns: ["membership_id"]
+            isOneToOne: false
+            referencedRelation: "FamilyMembership"
+            referencedColumns: ["membership_id"]
+          },
+          {
+            foreignKeyName: "ConsentRecord_platform_student_id_fkey"
+            columns: ["platform_student_id"]
+            isOneToOne: false
+            referencedRelation: "PlatformStudent"
+            referencedColumns: ["platform_student_id"]
+          },
+          {
+            foreignKeyName: "ConsentRecord_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "School"
+            referencedColumns: ["school_id"]
+          },
+        ]
+      }
       DailyNote: {
         Row: {
           category: string
@@ -526,6 +587,67 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "Teacher"
             referencedColumns: ["teacher_id"]
+          },
+        ]
+      }
+      DataDeletionRequest: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          platform_student_id: string
+          request_id: string
+          requested_by_membership_id: string | null
+          requested_by_school_id: string | null
+          resolution_notes: string | null
+          reviewed_by: string | null
+          scope: string
+          status: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          platform_student_id: string
+          request_id?: string
+          requested_by_membership_id?: string | null
+          requested_by_school_id?: string | null
+          resolution_notes?: string | null
+          reviewed_by?: string | null
+          scope: string
+          status?: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          platform_student_id?: string
+          request_id?: string
+          requested_by_membership_id?: string | null
+          requested_by_school_id?: string | null
+          resolution_notes?: string | null
+          reviewed_by?: string | null
+          scope?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "DataDeletionRequest_platform_student_id_fkey"
+            columns: ["platform_student_id"]
+            isOneToOne: false
+            referencedRelation: "PlatformStudent"
+            referencedColumns: ["platform_student_id"]
+          },
+          {
+            foreignKeyName: "DataDeletionRequest_requested_by_membership_id_fkey"
+            columns: ["requested_by_membership_id"]
+            isOneToOne: false
+            referencedRelation: "FamilyMembership"
+            referencedColumns: ["membership_id"]
+          },
+          {
+            foreignKeyName: "DataDeletionRequest_requested_by_school_id_fkey"
+            columns: ["requested_by_school_id"]
+            isOneToOne: false
+            referencedRelation: "School"
+            referencedColumns: ["school_id"]
           },
         ]
       }
@@ -1022,6 +1144,38 @@ export type Database = {
           profile_photo?: string | null
         }
         Relationships: []
+      }
+      RetentionPolicy: {
+        Row: {
+          action_on_expiry: string
+          data_category: string
+          policy_id: string
+          retention_period_days: number
+          school_id: string | null
+        }
+        Insert: {
+          action_on_expiry: string
+          data_category: string
+          policy_id?: string
+          retention_period_days: number
+          school_id?: string | null
+        }
+        Update: {
+          action_on_expiry?: string
+          data_category?: string
+          policy_id?: string
+          retention_period_days?: number
+          school_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "RetentionPolicy_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "School"
+            referencedColumns: ["school_id"]
+          },
+        ]
       }
       School: {
         Row: {
@@ -1600,6 +1754,30 @@ export type Database = {
           },
         ]
       }
+      ThirdPartyProcessor: {
+        Row: {
+          data_categories_shared: string
+          name: string
+          processing_region: string | null
+          processor_id: string
+          purpose: string
+        }
+        Insert: {
+          data_categories_shared: string
+          name: string
+          processing_region?: string | null
+          processor_id?: string
+          purpose: string
+        }
+        Update: {
+          data_categories_shared?: string
+          name?: string
+          processing_region?: string | null
+          processor_id?: string
+          purpose?: string
+        }
+        Relationships: []
+      }
       TransferPackage: {
         Row: {
           created_at: string
@@ -1753,6 +1931,14 @@ export type Database = {
         Args: { p_term_result_id: string }
         Returns: undefined
       }
+      admin_review_deletion_request: {
+        Args: {
+          p_decision: string
+          p_request_id: string
+          p_resolution_notes?: string
+        }
+        Returns: undefined
+      }
       assignment_atomicity_probe: {
         Args: {
           p_class_id: string
@@ -1776,6 +1962,11 @@ export type Database = {
         Returns: Json
       }
       custom_access_token_hook: { Args: { event: Json }; Returns: Json }
+      delete_enrollment_records: {
+        Args: { p_enrollment_id: string }
+        Returns: undefined
+      }
+      enforce_retention_policies: { Args: never; Returns: Json }
       enroll_student_in_school: {
         Args: {
           p_class_id?: string
@@ -1796,6 +1987,10 @@ export type Database = {
         }
         Returns: undefined
       }
+      family_request_deletion: {
+        Args: { p_platform_student_id: string; p_school_id: string }
+        Returns: string
+      }
       find_platform_student_candidates: {
         Args: { p_dob: string; p_guardian_contacts?: string[]; p_name: string }
         Returns: {
@@ -1809,6 +2004,30 @@ export type Database = {
       is_platform_admin: { Args: never; Returns: boolean }
       lookup_grade: {
         Args: { p_school_id: string; p_score: number }
+        Returns: string
+      }
+      platform_admin_create_full_erasure_request: {
+        Args: { p_notes?: string; p_platform_student_id: string }
+        Returns: string
+      }
+      platform_admin_review_full_erasure: {
+        Args: {
+          p_decision: string
+          p_request_id: string
+          p_resolution_notes?: string
+        }
+        Returns: undefined
+      }
+      record_consent: {
+        Args: {
+          p_consent_type: string
+          p_jurisdiction: string
+          p_membership_id?: string
+          p_method: string
+          p_platform_student_id: string
+          p_reference_document?: string
+          p_school_id: string
+        }
         Returns: string
       }
       register_school: {
@@ -1831,6 +2050,7 @@ export type Database = {
         }
         Returns: string
       }
+      revoke_consent: { Args: { p_consent_id: string }; Returns: undefined }
       show_limit: { Args: never; Returns: number }
       show_trgm: { Args: { "": string }; Returns: string[] }
       teacher_assigned_to_enrollment_class: {

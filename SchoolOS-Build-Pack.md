@@ -33,6 +33,7 @@ A complete reference set for SchoolOS — a Nigeria-first, global-ready digital 
 25. Pricing & Free Plan Matrix (AUTHORITATIVE — confirmed pricing; confirmed free-plan model)
 26. Assignment Attachment Specification (AUTHORITATIVE — image/PDF attachment, size limits, upload/preview UI)
 27. Results Computation & Report Card Model (AUTHORITATIVE — extends Doc 10's Assessment/Score tables; added mid-project after Milestone 0)
+28. Data Consent, Deletion & Retention Model (AUTHORITATIVE — privacy-compliance infrastructure for international pilots; engineering scope only, does not replace legal review)
 
 ---
 
@@ -2500,6 +2501,120 @@ create table "TermReportCard" (
 - Admin override of a computed grade/score — never allowed, by design
 - Changing `assessment_model` mid-session without an explicit, admin-confirmed migration step (not yet specified — flag as a follow-up if a school ever needs to switch models)
 - GDPR/COPPA compliance work for international pilots — this is a **separate, unresolved item**, not addressed by this doc. Do not treat the existence of Option 3 (narrative assessment) as resolving legal compliance for EU/UK/US pilot schools; that requires separate legal/compliance work before any real international pilot with real children's data goes live.
+
+---
+
+
+# Doc 28: Data Consent, Deletion & Retention Model
+
+**Context for Claude Code:** this doc is being added mid-project, in anticipation of SchoolOS's first international pilot schools (Canada primarily, possibly UK/US). It adds privacy-compliance infrastructure that sits across the existing schema — it does not replace anything in Doc 10, Doc 23, or Doc 27. Read alongside Doc 11 (multi-tenancy/RLS), Doc 23 §1 (Person/FamilyMembership model), and Doc 23 §2 (student identity matching) before implementing, since deletion and consent both interact directly with how `PlatformStudent` spans multiple schools.
+
+**Why this exists:** SchoolOS's existing design (minimal data collection, no profiling, no ad targeting, school-controlled enrollment) is already well-aligned with how privacy regulators want child-directed products to behave. What's missing are specific *capabilities* every jurisdiction above expects in some form: an auditable consent record, a real deletion/erasure workflow, enforced retention limits, and a disclosed list of third-party data processors. This doc is engineering scope only — it does not replace the actual legal work (Data Privacy Agreements per school, jurisdiction-specific privacy notices, legal sign-off) that must happen alongside it. Do not treat implementing this doc as "compliance achieved" — it is the technical foundation compliance requires, not a substitute for legal review.
+
+## 1. Consent Record
+
+```sql
+create table "ConsentRecord" (
+  consent_id uuid primary key default gen_random_uuid(),
+  school_id uuid not null references "School"(school_id),
+  platform_student_id uuid not null references "PlatformStudent"(platform_student_id),
+  membership_id uuid references "FamilyMembership"(membership_id),
+  -- nullable: a school-official/DPA-based consent (US FERPA path) may not
+  -- have an individual guardian as the consenting party
+  consent_type text not null,
+  -- e.g. 'school_official_data_sharing', 'parental_direct_consent',
+  -- 'third_party_sharing_acknowledgement', 'privacy_notice_acknowledgement'
+  jurisdiction text not null, -- 'US' | 'UK' | 'CA' | 'NG' | 'other'
+  method text not null, -- 'school_consent_on_behalf' | 'guardian_checkbox_at_activation' | 'admin_dpa_reference'
+  granted_at timestamptz not null default now(),
+  revoked_at timestamptz,
+  reference_document text -- e.g. a DPA identifier or privacy notice version string
+);
+```
+
+**What this enables:** a real, queryable answer to "who consented to what, when, and how" per child, per school — the specific thing that was previously just assumed rather than recorded. One child can have multiple consent rows across their enrollment history (e.g., separate consent at Oakridge in Nigeria vs. a Canadian school later), consistent with `PlatformStudent` spanning multiple schools (Doc 23 §1).
+
+## 2. Data Deletion / Erasure
+
+Deletion is **deliberately scoped at two levels**, because `PlatformStudent` is not school-scoped (Doc 23 §1) — a deletion request from one school must never silently destroy a child's history at a different school they're also enrolled in.
+
+```sql
+create table "DataDeletionRequest" (
+  request_id uuid primary key default gen_random_uuid(),
+  platform_student_id uuid not null references "PlatformStudent"(platform_student_id),
+  scope text not null, -- 'enrollment_scoped' | 'full_platform_erasure'
+  requested_by_membership_id uuid references "FamilyMembership"(membership_id),
+  requested_by_school_id uuid references "School"(school_id),
+  status text not null default 'pending', -- pending | in_review | completed | denied
+  reviewed_by text, -- school_admin_id or platform_admin_id depending on scope
+  resolution_notes text, -- what was deleted, what was retained and why
+  created_at timestamptz not null default now(),
+  completed_at timestamptz
+);
+```
+
+**Enrollment-scoped deletion (the common case):** a parent or school requests erasure of a child's data **at one specific school**. A School Admin can review and action this. It affects only records tied to that `enrollment_id` (assignments, attendance, scores, daily notes, fee records for that enrollment) — never the `PlatformStudent` identity itself, and never records belonging to a *different* school's enrollment for the same child.
+
+**Full platform erasure (the rare case):** a request to delete the `PlatformStudent` identity entirely. This can **only be approved by Platform Admin**, never a School Admin — because Platform Admin is the only role with visibility across all of a child's enrollments (Doc 24 §6), and approving this without checking for active enrollments elsewhere would risk destroying another school's legitimate records. Before approval, the system must surface every active `SchoolEnrollment` tied to that `platform_student_id` so Platform Admin can confirm none are still active, or route the request to each affected school first.
+
+**What "deletion" actually does, concretely:**
+- Where a record has no independent retention justification: hard delete.
+- Where a record is referenced by something that must be preserved for audit/legal integrity (e.g., a `FeeRecord` tied to a financial audit trail, or an `AuditLog` entry referencing the student) — **anonymize, don't delete**: replace identifying fields (name, DOB, photo) with a placeholder while preserving the non-identifying structure needed for the audit trail to remain internally consistent. This mirrors the same "historical data stays frozen" principle already established for transferred academic records (Doc 23 §5) and finalized report cards (Doc 27 §5) — deletion must not quietly break referential integrity elsewhere.
+- A completed `DataDeletionRequest` must record **what was actually deleted vs. anonymized vs. retained, and why** in `resolution_notes` — this is the auditable evidence a school or Platform Admin would need to show a regulator that a deletion request was actually honored, not just marked "done."
+
+## 3. Retention Policy & Enforcement
+
+```sql
+create table "RetentionPolicy" (
+  policy_id uuid primary key default gen_random_uuid(),
+  school_id uuid references "School"(school_id), -- null = platform-wide default
+  data_category text not null,
+  -- e.g. 'inactive_student_records', 'notification_history',
+  -- 'activity_audit_logs', 'uploaded_attachments'
+  retention_period_days integer not null,
+  action_on_expiry text not null -- 'delete' | 'anonymize'
+);
+```
+
+**Enforcement must be a real scheduled job, not a policy document.** Using the background-job architecture already corrected in Doc 23 §4 (Supabase Edge Functions + pg_cron, not a persistent worker): a recurring job checks each `RetentionPolicy` against record age and performs the specified action automatically. A written retention policy with no enforcement mechanism behind it does not satisfy what COPPA's 2026 rule or similar frameworks actually require — the deletion has to actually happen, on schedule, without a human remembering to trigger it.
+
+Default platform-wide policies should ship with reasonable starting values (e.g., notification history retained 24 months, inactive enrollment records retained per the school's own configurable choice) — exact default periods are a product/legal decision, not specified here; flag to Alana before shipping defaults live.
+
+## 4. Named Third-Party Processor Registry
+
+```sql
+create table "ThirdPartyProcessor" (
+  processor_id uuid primary key default gen_random_uuid(),
+  name text not null, -- e.g. 'Stripe', 'Paystack', 'WhatsApp Cloud API (Meta)',
+                       -- 'Supabase', 'Sentry'
+  purpose text not null, -- e.g. 'payment processing', 'account activation messaging'
+  data_categories_shared text not null,
+  processing_region text -- where this processor stores/processes data
+);
+```
+
+**Why this needs to be real, queryable data, not a hardcoded paragraph in a privacy policy:** COPPA's 2026 update specifically requires naming third-party recipients individually in consent/notice flows, and this list will change over time as the stack evolves (e.g., adding a new gateway, swapping an error-tracking tool). A registry table lets the privacy notice and any consent flow render the *current* accurate list automatically, rather than a static document silently going stale the next time infrastructure changes — which is exactly the kind of documentation-reality drift Doc 22 §4 already warns against.
+
+Seed this table with every processor already in the current architecture: Stripe, Paystack, WhatsApp Cloud API, Supabase (hosting/storage/auth), Sentry (error tracking).
+
+## 5. Permission Notes (Extends Doc 6, No Changes to Existing Matrix)
+- **School Admin:** can view/action `DataDeletionRequest` rows scoped to `enrollment_scoped` for their own school; can view `ConsentRecord` rows for their own school's students; cannot approve `full_platform_erasure` requests
+- **Platform Admin:** full visibility and approval authority over `full_platform_erasure` requests, consistent with the general override authority already established in Doc 24 §8; can view `ConsentRecord` and `RetentionPolicy` across all schools
+- **Family:** can *submit* a deletion request for their own enrolled child (enrollment-scoped only) via their dashboard; cannot submit a full-platform-erasure request directly — that requires Platform Admin review given the cross-school stakes
+- **Teacher:** no new permissions — this doc introduces no teacher-facing capability
+
+## 6. UI/Onboarding Notes (Extends Doc 12, Doc 18)
+- **Family activation flow (Doc 12)** gains a mandatory consent step before activation completes: a clear checkbox/acknowledgement (not pre-checked, not buried), recorded as a `ConsentRecord` row with `method = 'guardian_checkbox_at_activation'`. Exact wording is content/legal work, not engineering — flag to Alana rather than drafting legal language.
+- **School registration flow (Doc 24 §2)** gains a jurisdiction field (if not already implied by country) that determines which consent flow and privacy notice version is shown — a Nigerian school's flow differs from a Canadian/UK/US one.
+- **Family dashboard** gains a "Request Data Deletion" action under account/profile settings, submitting a `DataDeletionRequest` as described in §2.
+- **Admin dashboard** gains a Deletion Requests queue (parallel to the existing Transfer Requests queue, Doc 13 journey #7) for reviewing and actioning enrollment-scoped requests.
+- **Platform Admin dashboard** gains the equivalent queue for full-platform-erasure requests, with the cross-enrollment visibility check described in §2.
+
+## 7. Explicitly Out of Scope (This Doc Is Engineering Scope Only)
+- Drafting actual privacy notice / DPA legal language — this is legal work, not implementation work; do not generate binding legal text as a substitute for actual counsel
+- Age-verification mechanisms beyond what's already implicit in school-controlled enrollment (schools already know their students' ages; no additional age-gating UI is specified here)
+- Jurisdiction-specific default retention periods — flag to Alana before setting real default values, since this is a legal/product decision, not something to assume
+- Automated cross-border data residency enforcement (e.g., forcing EU/UK children's data to stay on EU-based infrastructure) — not addressed by this doc; flag as a separate follow-up if a specific pilot school's contract requires it
 
 ---
 
