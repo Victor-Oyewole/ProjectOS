@@ -32,6 +32,7 @@ A complete reference set for SchoolOS — a Nigeria-first, global-ready digital 
 24. Platform Subscription, Billing & Self-Serve Onboarding Model (AUTHORITATIVE — tier enforcement, upgrade mechanics, retry cadence, and gateway choice all confirmed)
 25. Pricing & Free Plan Matrix (AUTHORITATIVE — confirmed pricing; confirmed free-plan model)
 26. Assignment Attachment Specification (AUTHORITATIVE — image/PDF attachment, size limits, upload/preview UI)
+27. Results Computation & Report Card Model (AUTHORITATIVE — extends Doc 10's Assessment/Score tables; added mid-project after Milestone 0)
 
 ---
 
@@ -2322,7 +2323,183 @@ Optional image/PDF attachment on assignment creation is now part of **V1 scope**
 - No in-app annotation/markup on attachments
 - No attachment-based assignment submission (workbook remains the completion medium)
 - No attachment editing after publish — removing/replacing requires retracting and recreating the assignment (consistent with the existing retract-not-edit-after-view caution from Doc 6, applied here by extension)
--e 
+
+---
+
+
+# Doc 27: Results Computation & Report Card Model
+
+**Context for Claude Code:** this doc is being added mid-project, after Milestone 0 (schema/RLS) and likely during or after Milestone 2 (teacher workflow). It extends the existing `Assessment`/`Score` tables from Doc 10 — it does not replace them. Read this alongside Doc 10 (schema), Doc 6 (permission matrix), and Doc 23 (architecture freeze review) before implementing. If any table/field named here already exists with different structure, treat this doc as authoritative and migrate accordingly, preserving existing data where possible.
+
+**Why this exists:** teachers already enter raw per-assessment scores (Doc 13 journey #3). Nothing currently specifies how those raw scores become a final term result, an overall grade, or a report card — and no single formula fits every school this platform targets, including non-Nigerian ones. This doc specifies three selectable assessment models, the shared computation lifecycle, and the schema to support all three without forking the platform.
+
+## 1. Core Principle
+
+A school **locks in one assessment model** during Academic Setup. All three models share the same Draft → Finalized → Published lifecycle and the same rule: **once a result is finalized, it snapshots the rules that produced it.** Changing a grading rule later never silently alters an already-finalized report card.
+
+```
+School
+- assessment_model: "equal_weight" | "credit_weighted" | "narrative_milestone"
+```
+
+This is a one-time (or rarely-changed) school-level setting, selected once, not chosen per report card or per term.
+
+## 2. Option 1: Equal-Weight Average (Aggregate Model)
+
+The traditional model — every subject counts the same. No per-subject configuration beyond the subject list itself.
+
+**Formula:**
+```
+Overall Score = Σ(subject_score) / number_of_subjects
+```
+
+**Schema:** uses existing `Subject` and `Score` tables as-is. No additional fields required for this model.
+
+**When a school would pick this:** simplest setup, matches the traditional "scored X/100 per subject, plain average overall" report card format.
+
+## 3. Option 2: Credit-Weighted Average
+
+Core subjects can be configured to count more than others.
+
+**Formula:**
+```
+Overall Score = Σ(subject_score × credit_weight) / Σ(credit_weight)
+
+Example: Math 80 (credit 5), English 70 (credit 5),
+         Social Studies 60 (credit 3), Art 90 (credit 2)
+= (80×5 + 70×5 + 60×3 + 90×2) / (5+5+3+2)
+= (400 + 350 + 180 + 180) / 15 = 74.0
+```
+
+**Schema addition:**
+```sql
+alter table "Subject" add column credit_weight integer not null default 1;
+```
+Admin sets this per subject during Academic Setup, when the school's `assessment_model` is `credit_weighted`. If a school is on `equal_weight`, this column is simply ignored (or treated as always 1) by the computation logic — no schema fork needed between Options 1 and 2.
+
+## 4. Option 3: Narrative/Milestone-Based Assessment
+
+For international early-years/nursery schools using developmental-milestone assessment (e.g., UK EYFS-style, Montessori, Reggio Emilia) rather than numeric scoring. This is a genuinely different assessment *shape*, not just a different formula — there is no number to average.
+
+**New tables (used only when `assessment_model = "narrative_milestone"`):**
+```sql
+create table "MilestoneScale" (
+  scale_id uuid primary key default gen_random_uuid(),
+  school_id uuid not null references "School"(school_id),
+  levels jsonb not null
+  -- ordered array of school-defined labels, e.g.
+  -- ["Emerging", "Expected", "Exceeding"]
+);
+
+create table "MilestoneAssessment" (
+  id uuid primary key default gen_random_uuid(),
+  enrollment_id uuid not null references "SchoolEnrollment"(enrollment_id),
+  subject_id uuid not null references "Subject"(subject_id),
+  -- Subject table is reused as-is here; for this model, a row in
+  -- Subject represents a "developmental area" (e.g., "Communication
+  -- and Language", "Physical Development") rather than a scored
+  -- school subject. Same table, same RLS, different UI label.
+  term_id uuid not null references "Term"(term_id),
+  milestone_level text not null, -- must match one of the school's MilestoneScale.levels
+  narrative_note text,
+  entered_by uuid not null references "Teacher"(teacher_id),
+  entered_at timestamptz not null default now(),
+  school_id uuid not null references "School"(school_id) -- for RLS
+);
+```
+`Score` and `Assessment` (the CA1/CA2/Exam tables from Doc 10) are **not used** for this model — `MilestoneAssessment` replaces them entirely for schools on this track.
+
+**No computed average, no grade, no class position for this model** — these would misrepresent how milestone-based assessment works and must not be shown. This is a deliberate omission, not a missing feature.
+
+## 5. Shared Result/Report Lifecycle (All Three Models)
+
+```sql
+create table "TermResult" (
+  -- used by Option 1 and Option 2 only
+  result_id uuid primary key default gen_random_uuid(),
+  enrollment_id uuid not null references "SchoolEnrollment"(enrollment_id),
+  term_id uuid not null references "Term"(term_id),
+  subject_id uuid not null references "Subject"(subject_id),
+  raw_score numeric not null,
+  credit_weight_snapshot integer not null, -- value AT COMPUTE TIME, never re-read live
+  weighted_contribution numeric not null,
+  grade text, -- looked up from GradeScale at compute time
+  status text not null default 'draft', -- draft | finalized | published
+  computed_at timestamptz,
+  school_id uuid not null references "School"(school_id)
+);
+
+create table "GradeScale" (
+  scale_id uuid primary key default gen_random_uuid(),
+  school_id uuid not null references "School"(school_id),
+  bands jsonb not null
+  -- e.g. [{"min":70,"max":100,"grade":"A","remark":"Excellent"}, ...]
+);
+
+create table "TermReportCard" (
+  -- the aggregate document per student per term, all models
+  report_id uuid primary key default gen_random_uuid(),
+  enrollment_id uuid not null references "SchoolEnrollment"(enrollment_id),
+  term_id uuid not null references "Term"(term_id),
+  overall_score numeric, -- null for narrative_milestone model
+  overall_grade text, -- null for narrative_milestone model
+  class_position integer, -- null for narrative_milestone model
+  overall_summary text, -- composed narrative text; used by all models,
+                         -- but it's the ONLY meaningful summary field
+                         -- for narrative_milestone
+  attendance_summary jsonb,
+  teacher_remark text,
+  status text not null default 'draft', -- draft | finalized | published
+  finalized_at timestamptz,
+  published_at timestamptz,
+  school_id uuid not null references "School"(school_id)
+);
+```
+
+**Workflow (identical across all three models):**
+```
+1. Through the term: teachers enter raw data
+   - Option 1/2: Score per Assessment (CA1, CA2, Exam...), as already built
+   - Option 3: MilestoneAssessment entries per developmental area
+
+2. Term end: Admin triggers "Compute Results"
+   - Option 1/2: validates assessment weights sum to 100% per subject
+     (blocks computation if not); computes TermResult rows per subject
+     using the school's locked assessment_model; looks up grade from
+     GradeScale; writes as status='draft'
+   - Option 3: no computation step — narrative entries are compiled
+     directly into the TermReportCard's overall_summary as draft
+
+3. Admin reviews Draft → can reopen a specific underlying score/note
+   for teacher correction (audit-logged in AuditLog, per Doc 10 §1);
+   reopening reverts the affected TermResult/report back to draft
+
+4. Admin "Finalizes" → locks TermResult rows; generates/locks the
+   aggregate TermReportCard (class position only computed for
+   Option 1/2, never for Option 3)
+
+5. Admin "Publishes" → only now visible to families (Doc 13 Results
+   tab); drafts are never shown to parents, same as before
+```
+
+**Critical rule — snapshot, never live-recompute:** `credit_weight_snapshot` on `TermResult` stores the credit value **as it was at compute time**. If admin later changes a subject's credit weight, every already-finalized `TermResult` keeps its original snapshot value. A parent's report card from a prior term must never change because a rule changed later. This applies equally to `GradeScale` lookups — the grade stored on `TermResult` is fixed at compute time, not re-derived if the scale changes afterward.
+
+## 6. Permission Notes (Extends Doc 6, No Changes to Existing Matrix)
+- Admin: configures `assessment_model`, `credit_weight` (if applicable), `GradeScale`, `MilestoneScale` (if applicable); triggers Compute/Finalize/Publish; can reopen a finalized result (audit-logged)
+- Admin **cannot** hand-edit a computed grade, score, or class position directly — only reopen the underlying input and let it recompute
+- Teacher: enters raw `Score` or `MilestoneAssessment` rows only, within their assigned class/subject, exactly as already specified in Doc 6 — no new teacher permission needed
+- Family: views `TermReportCard` only once `status = 'published'`, same as existing Results tab behavior (Doc 13)
+
+## 7. UI Notes (Extends Doc 18/Doc 14)
+- The New Assessment / score-entry screen (Doc 13 journey #3) renders differently depending on the school's `assessment_model`: a numeric grid for Option 1/2, a milestone-level picker + narrative text field for Option 3
+- The report card screen (see the mockup already built in the project's design canvas) shows a full subject/score/credit/grade table for Option 1/2; for Option 3 it instead shows each developmental area with its milestone level and narrative note, with no numeric summary row
+- Admin's Academic Setup flow (Doc 12) gains one new step: selecting `assessment_model` for the school, and configuring the corresponding scale (`GradeScale` or `MilestoneScale`) before subjects/credits can be fully configured
+
+## 8. Explicitly Out of Scope (Still, Even With This Addition)
+- GPA/grade-point model (previously considered, deliberately rejected — see Doc 25 discussion history; not reintroduced here)
+- Admin override of a computed grade/score — never allowed, by design
+- Changing `assessment_model` mid-session without an explicit, admin-confirmed migration step (not yet specified — flag as a follow-up if a school ever needs to switch models)
+- GDPR/COPPA compliance work for international pilots — this is a **separate, unresolved item**, not addressed by this doc. Do not treat the existence of Option 3 (narrative assessment) as resolving legal compliance for EU/UK/US pilot schools; that requires separate legal/compliance work before any real international pilot with real children's data goes live.
 
 ---
 

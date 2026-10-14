@@ -123,6 +123,7 @@ export type Database = {
           school_id: string
           subject_id: string
           term_id: string
+          weight: number
         }
         Insert: {
           assessment_id?: string
@@ -131,6 +132,7 @@ export type Database = {
           school_id: string
           subject_id: string
           term_id: string
+          weight?: number
         }
         Update: {
           assessment_id?: string
@@ -139,6 +141,7 @@ export type Database = {
           school_id?: string
           subject_id?: string
           term_id?: string
+          weight?: number
         }
         Relationships: [
           {
@@ -662,6 +665,32 @@ export type Database = {
           },
         ]
       }
+      GradeScale: {
+        Row: {
+          bands: Json
+          scale_id: string
+          school_id: string
+        }
+        Insert: {
+          bands: Json
+          scale_id?: string
+          school_id: string
+        }
+        Update: {
+          bands?: Json
+          scale_id?: string
+          school_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "GradeScale_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: true
+            referencedRelation: "School"
+            referencedColumns: ["school_id"]
+          },
+        ]
+      }
       Guardian: {
         Row: {
           contact_info: string | null
@@ -777,6 +806,104 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "FamilyMembership"
             referencedColumns: ["membership_id"]
+          },
+        ]
+      }
+      MilestoneAssessment: {
+        Row: {
+          enrollment_id: string
+          entered_at: string
+          entered_by: string
+          id: string
+          milestone_level: string
+          narrative_note: string | null
+          school_id: string
+          subject_id: string
+          term_id: string
+        }
+        Insert: {
+          enrollment_id: string
+          entered_at?: string
+          entered_by: string
+          id?: string
+          milestone_level: string
+          narrative_note?: string | null
+          school_id: string
+          subject_id: string
+          term_id: string
+        }
+        Update: {
+          enrollment_id?: string
+          entered_at?: string
+          entered_by?: string
+          id?: string
+          milestone_level?: string
+          narrative_note?: string | null
+          school_id?: string
+          subject_id?: string
+          term_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "MilestoneAssessment_enrollment_id_fkey"
+            columns: ["enrollment_id"]
+            isOneToOne: false
+            referencedRelation: "SchoolEnrollment"
+            referencedColumns: ["enrollment_id"]
+          },
+          {
+            foreignKeyName: "MilestoneAssessment_entered_by_fkey"
+            columns: ["entered_by"]
+            isOneToOne: false
+            referencedRelation: "Teacher"
+            referencedColumns: ["teacher_id"]
+          },
+          {
+            foreignKeyName: "MilestoneAssessment_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "School"
+            referencedColumns: ["school_id"]
+          },
+          {
+            foreignKeyName: "MilestoneAssessment_subject_id_fkey"
+            columns: ["subject_id"]
+            isOneToOne: false
+            referencedRelation: "Subject"
+            referencedColumns: ["subject_id"]
+          },
+          {
+            foreignKeyName: "MilestoneAssessment_term_id_fkey"
+            columns: ["term_id"]
+            isOneToOne: false
+            referencedRelation: "Term"
+            referencedColumns: ["term_id"]
+          },
+        ]
+      }
+      MilestoneScale: {
+        Row: {
+          levels: Json
+          scale_id: string
+          school_id: string
+        }
+        Insert: {
+          levels: Json
+          scale_id?: string
+          school_id: string
+        }
+        Update: {
+          levels?: Json
+          scale_id?: string
+          school_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "MilestoneScale_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: true
+            referencedRelation: "School"
+            referencedColumns: ["school_id"]
           },
         ]
       }
@@ -899,6 +1026,7 @@ export type Database = {
       School: {
         Row: {
           address: string | null
+          assessment_model: string
           contact_info: string | null
           country: string
           created_at: string
@@ -910,6 +1038,7 @@ export type Database = {
         }
         Insert: {
           address?: string | null
+          assessment_model?: string
           contact_info?: string | null
           country: string
           created_at?: string
@@ -921,6 +1050,7 @@ export type Database = {
         }
         Update: {
           address?: string | null
+          assessment_model?: string
           contact_info?: string | null
           country?: string
           created_at?: string
@@ -1108,16 +1238,19 @@ export type Database = {
       }
       Subject: {
         Row: {
+          credit_weight: number
           name: string
           school_id: string
           subject_id: string
         }
         Insert: {
+          credit_weight?: number
           name: string
           school_id: string
           subject_id?: string
         }
         Update: {
+          credit_weight?: number
           name?: string
           school_id?: string
           subject_id?: string
@@ -1326,6 +1459,147 @@ export type Database = {
           },
         ]
       }
+      TermReportCard: {
+        Row: {
+          attendance_summary: Json | null
+          class_position: number | null
+          enrollment_id: string
+          finalized_at: string | null
+          overall_grade: string | null
+          overall_score: number | null
+          overall_summary: string | null
+          published_at: string | null
+          report_id: string
+          school_id: string
+          status: string
+          teacher_remark: string | null
+          term_id: string
+        }
+        Insert: {
+          attendance_summary?: Json | null
+          class_position?: number | null
+          enrollment_id: string
+          finalized_at?: string | null
+          overall_grade?: string | null
+          overall_score?: number | null
+          overall_summary?: string | null
+          published_at?: string | null
+          report_id?: string
+          school_id: string
+          status?: string
+          teacher_remark?: string | null
+          term_id: string
+        }
+        Update: {
+          attendance_summary?: Json | null
+          class_position?: number | null
+          enrollment_id?: string
+          finalized_at?: string | null
+          overall_grade?: string | null
+          overall_score?: number | null
+          overall_summary?: string | null
+          published_at?: string | null
+          report_id?: string
+          school_id?: string
+          status?: string
+          teacher_remark?: string | null
+          term_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "TermReportCard_enrollment_id_fkey"
+            columns: ["enrollment_id"]
+            isOneToOne: false
+            referencedRelation: "SchoolEnrollment"
+            referencedColumns: ["enrollment_id"]
+          },
+          {
+            foreignKeyName: "TermReportCard_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "School"
+            referencedColumns: ["school_id"]
+          },
+          {
+            foreignKeyName: "TermReportCard_term_id_fkey"
+            columns: ["term_id"]
+            isOneToOne: false
+            referencedRelation: "Term"
+            referencedColumns: ["term_id"]
+          },
+        ]
+      }
+      TermResult: {
+        Row: {
+          computed_at: string | null
+          credit_weight_snapshot: number
+          enrollment_id: string
+          grade: string | null
+          raw_score: number
+          result_id: string
+          school_id: string
+          status: string
+          subject_id: string
+          term_id: string
+          weighted_contribution: number
+        }
+        Insert: {
+          computed_at?: string | null
+          credit_weight_snapshot: number
+          enrollment_id: string
+          grade?: string | null
+          raw_score: number
+          result_id?: string
+          school_id: string
+          status?: string
+          subject_id: string
+          term_id: string
+          weighted_contribution: number
+        }
+        Update: {
+          computed_at?: string | null
+          credit_weight_snapshot?: number
+          enrollment_id?: string
+          grade?: string | null
+          raw_score?: number
+          result_id?: string
+          school_id?: string
+          status?: string
+          subject_id?: string
+          term_id?: string
+          weighted_contribution?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "TermResult_enrollment_id_fkey"
+            columns: ["enrollment_id"]
+            isOneToOne: false
+            referencedRelation: "SchoolEnrollment"
+            referencedColumns: ["enrollment_id"]
+          },
+          {
+            foreignKeyName: "TermResult_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "School"
+            referencedColumns: ["school_id"]
+          },
+          {
+            foreignKeyName: "TermResult_subject_id_fkey"
+            columns: ["subject_id"]
+            isOneToOne: false
+            referencedRelation: "Subject"
+            referencedColumns: ["subject_id"]
+          },
+          {
+            foreignKeyName: "TermResult_term_id_fkey"
+            columns: ["term_id"]
+            isOneToOne: false
+            referencedRelation: "Term"
+            referencedColumns: ["term_id"]
+          },
+        ]
+      }
       TransferPackage: {
         Row: {
           created_at: string
@@ -1443,16 +1717,40 @@ export type Database = {
       admin_bulk_add_families: { Args: { p_rows: Json }; Returns: Json }
       admin_bulk_add_students: { Args: { p_rows: Json }; Returns: Json }
       admin_bulk_add_teachers: { Args: { p_rows: Json }; Returns: Json }
+      admin_compile_narrative_reports: {
+        Args: { p_class_id: string; p_term_id: string }
+        Returns: Json
+      }
+      admin_compute_term_results: {
+        Args: { p_class_id: string; p_term_id: string }
+        Returns: Json
+      }
       admin_create_family_person: {
         Args: { p_contact_info?: string; p_name: string }
+        Returns: Json
+      }
+      admin_finalize_class_term: {
+        Args: { p_class_id: string; p_term_id: string }
         Returns: Json
       }
       admin_generate_activation_code: {
         Args: { p_target_entity: string; p_target_id: string }
         Returns: string
       }
+      admin_publish_class_term: {
+        Args: { p_class_id: string; p_term_id: string }
+        Returns: Json
+      }
       admin_remove_second_admin: {
         Args: { p_admin_id: string }
+        Returns: undefined
+      }
+      admin_reopen_term_report: {
+        Args: { p_report_id: string }
+        Returns: undefined
+      }
+      admin_reopen_term_result: {
+        Args: { p_term_result_id: string }
         Returns: undefined
       }
       assignment_atomicity_probe: {
@@ -1509,6 +1807,10 @@ export type Database = {
       }
       generate_platform_student_id: { Args: never; Returns: string }
       is_platform_admin: { Args: never; Returns: boolean }
+      lookup_grade: {
+        Args: { p_school_id: string; p_score: number }
+        Returns: string
+      }
       register_school: {
         Args: {
           p_admin_contact?: string
