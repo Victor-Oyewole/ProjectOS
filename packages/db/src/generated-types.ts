@@ -1898,6 +1898,14 @@ export type Database = {
         Args: { p_contact_info?: string; p_name: string; p_staff_id?: string }
         Returns: Json
       }
+      admin_approve_transfer_request: {
+        Args: {
+          p_included_records: Json
+          p_notes?: string
+          p_request_id: string
+        }
+        Returns: string
+      }
       admin_bulk_add_families: { Args: { p_rows: Json }; Returns: Json }
       admin_bulk_add_students: { Args: { p_rows: Json }; Returns: Json }
       admin_bulk_add_teachers: { Args: { p_rows: Json }; Returns: Json }
@@ -1912,6 +1920,10 @@ export type Database = {
       admin_create_family_person: {
         Args: { p_contact_info?: string; p_name: string }
         Returns: Json
+      }
+      admin_deny_transfer_request: {
+        Args: { p_reason?: string; p_request_id: string }
+        Returns: undefined
       }
       admin_finalize_class_term: {
         Args: { p_class_id: string; p_term_id: string }
@@ -2057,6 +2069,13 @@ export type Database = {
         Returns: string
       }
       revoke_consent: { Args: { p_consent_id: string }; Returns: undefined }
+      search_schools: {
+        Args: { p_name: string }
+        Returns: {
+          name: string
+          school_id: string
+        }[]
+      }
       show_limit: { Args: never; Returns: number }
       show_trgm: { Args: { "": string }; Returns: string[] }
       teacher_assigned_to_enrollment_class: {

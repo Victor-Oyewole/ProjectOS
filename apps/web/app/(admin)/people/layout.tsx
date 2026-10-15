@@ -18,6 +18,9 @@ export default async function PeopleLayout({ children }: { children: React.React
           <Link href="/fees" className="text-sm font-medium text-slate-500 hover:text-slate-900">
             Fees
           </Link>
+          <Link href="/transfers" className="text-sm font-medium text-slate-500 hover:text-slate-900">
+            Transfers
+          </Link>
           <Link href="/admins" className="text-sm font-medium text-slate-500 hover:text-slate-900">
             Manage school admins
           </Link>
