@@ -95,7 +95,7 @@ export function StudentForm({ classes }: { classes: { class_id: string; name: st
           type="button"
           disabled={isPending}
           onClick={handleCreateAsNew}
-          className="self-start rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-white hover:bg-primary-dark disabled:opacity-60"
+          className="self-start rounded-sm bg-primary px-3 py-1.5 text-xs font-medium text-white hover:bg-primary-dark disabled:opacity-60"
         >
           Different student — add as new
         </button>
@@ -133,7 +133,7 @@ export function StudentForm({ classes }: { classes: { class_id: string; name: st
       <button
         type="submit"
         disabled={isPending}
-        className="rounded-md bg-primary px-4 py-1.5 text-sm font-medium text-white hover:bg-primary-dark disabled:opacity-60"
+        className="rounded-sm bg-primary px-4 py-1.5 text-sm font-medium text-white hover:bg-primary-dark disabled:opacity-60"
       >
         Add student
       </button>

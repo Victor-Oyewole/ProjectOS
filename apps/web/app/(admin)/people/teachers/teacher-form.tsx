@@ -25,7 +25,7 @@ export function TeacherForm() {
       <button
         type="submit"
         disabled={isPending}
-        className="rounded-md bg-primary px-4 py-1.5 text-sm font-medium text-white hover:bg-primary-dark disabled:opacity-60"
+        className="rounded-sm bg-primary px-4 py-1.5 text-sm font-medium text-white hover:bg-primary-dark disabled:opacity-60"
       >
         Add teacher
       </button>

@@ -80,7 +80,7 @@ export function DailyNoteForm({
       <button
         type="submit"
         disabled={isPending}
-        className="self-start rounded-md bg-primary px-4 py-1.5 text-sm font-medium text-white hover:bg-primary-dark disabled:opacity-60"
+        className="self-start rounded-sm bg-primary px-4 py-1.5 text-sm font-medium text-white hover:bg-primary-dark disabled:opacity-60"
       >
         Send note
       </button>

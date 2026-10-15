@@ -52,7 +52,7 @@ export function NewSessionForm() {
       <button
         type="submit"
         disabled={isPending}
-        className="rounded-md bg-primary px-4 py-1.5 text-sm font-medium text-white hover:bg-primary-dark disabled:opacity-60"
+        className="rounded-sm bg-primary px-4 py-1.5 text-sm font-medium text-white hover:bg-primary-dark disabled:opacity-60"
       >
         Add session
       </button>
@@ -99,7 +99,7 @@ export function NewTermForm({ sessionId }: { sessionId: string }) {
       <button
         type="submit"
         disabled={isPending}
-        className="rounded-md border border-border px-3 py-1.5 text-sm font-medium hover:bg-primary-light disabled:opacity-60"
+        className="rounded-sm border border-border px-3 py-1.5 text-sm font-medium hover:bg-primary-light disabled:opacity-60"
       >
         Add term
       </button>
@@ -127,7 +127,7 @@ export function NewClassForm() {
       <button
         type="submit"
         disabled={isPending}
-        className="rounded-md bg-primary px-4 py-1.5 text-sm font-medium text-white hover:bg-primary-dark disabled:opacity-60"
+        className="rounded-sm bg-primary px-4 py-1.5 text-sm font-medium text-white hover:bg-primary-dark disabled:opacity-60"
       >
         Add class
       </button>
@@ -155,7 +155,7 @@ export function NewSubjectForm() {
       <button
         type="submit"
         disabled={isPending}
-        className="rounded-md bg-primary px-4 py-1.5 text-sm font-medium text-white hover:bg-primary-dark disabled:opacity-60"
+        className="rounded-sm bg-primary px-4 py-1.5 text-sm font-medium text-white hover:bg-primary-dark disabled:opacity-60"
       >
         Add subject
       </button>
@@ -235,7 +235,7 @@ export function AssignTeacherForm({
       <button
         type="submit"
         disabled={isPending}
-        className="rounded-md bg-primary px-4 py-1.5 text-sm font-medium text-white hover:bg-primary-dark disabled:opacity-60"
+        className="rounded-sm bg-primary px-4 py-1.5 text-sm font-medium text-white hover:bg-primary-dark disabled:opacity-60"
       >
         Assign
       </button>
@@ -307,7 +307,7 @@ export function NewAssessmentForm({
       <button
         type="submit"
         disabled={isPending}
-        className="rounded-md bg-primary px-4 py-1.5 text-sm font-medium text-white hover:bg-primary-dark disabled:opacity-60"
+        className="rounded-sm bg-primary px-4 py-1.5 text-sm font-medium text-white hover:bg-primary-dark disabled:opacity-60"
       >
         Add assessment
       </button>

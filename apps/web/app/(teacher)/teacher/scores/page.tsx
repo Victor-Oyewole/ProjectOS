@@ -93,7 +93,7 @@ export default async function TeacherScoresPage({
         </div>
         <button
           type="submit"
-          className="rounded-md border border-border px-4 py-1.5 text-sm font-medium hover:bg-primary-light"
+          className="rounded-sm border border-border px-4 py-1.5 text-sm font-medium hover:bg-primary-light"
         >
           Load
         </button>

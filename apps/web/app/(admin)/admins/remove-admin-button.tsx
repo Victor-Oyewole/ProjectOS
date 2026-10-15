@@ -21,7 +21,7 @@ export function RemoveAdminButton({ adminId }: { adminId: string }) {
         type="button"
         disabled={isPending}
         onClick={handleClick}
-        className="rounded-md border border-danger/30 px-2 py-1 text-xs font-medium text-danger hover:bg-danger/10 disabled:opacity-60"
+        className="rounded-sm border border-danger/30 px-2 py-1 text-xs font-medium text-danger hover:bg-danger/10 disabled:opacity-60"
       >
         Remove
       </button>
