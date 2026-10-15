@@ -20,4 +20,6 @@ export {
   type AttendanceStatus,
   AssignmentStatusBadge,
   type AssignmentStatus,
+  DeletionRequestStatusBadge,
+  type DeletionRequestStatus,
 } from "./composite/StatusBadge";

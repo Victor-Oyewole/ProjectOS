@@ -73,3 +73,20 @@ export function AssignmentStatusBadge({ status }: { status: AssignmentStatus }) 
     </Badge>
   );
 }
+
+export type DeletionRequestStatus = "pending" | "in_review" | "completed" | "denied";
+const DELETION_TONE: Record<DeletionRequestStatus, BadgeTone> = {
+  pending: "warning",
+  in_review: "warning",
+  completed: "success",
+  denied: "danger",
+};
+
+export function DeletionRequestStatusBadge({ status }: { status: DeletionRequestStatus }) {
+  const tone = DELETION_TONE[status];
+  return (
+    <Badge tone={tone} icon={iconFor(tone)}>
+      {status}
+    </Badge>
+  );
+}
