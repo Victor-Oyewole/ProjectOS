@@ -1,3 +1,38 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Doc 18 Section 1 -- the literal design-token source of truth. Values are
+   copied verbatim from the spec, not approximated against a stock Tailwind
+   palette (an earlier pass through this codebase used Tailwind's `slate-*`
+   scale ad hoc, which is visually close but not identical to these -- that
+   gap is being closed screen by screen as part of Milestone 6). Dark-mode
+   values are defined but NOT wired to any toggle -- Doc 17/18 both flag
+   dark mode as an open product decision, not yet confirmed in scope. */
+:root {
+  --color-primary: #2563eb;
+  --color-primary-dark: #1e40af;
+  --color-primary-light: #dbeafe;
+  --color-accent: #f59e0b;
+
+  --color-success: #16a34a;
+  --color-warning: #d97706;
+  --color-danger: #dc2626;
+  --color-info: #0891b2;
+
+  --color-bg: #fafafa;
+  --color-surface: #ffffff;
+  --color-border: #e5e7eb;
+  --color-text-primary: #111827;
+  --color-text-secondary: #6b7280;
+  --color-text-disabled: #9ca3af;
+
+  /* Open decision (Doc 18 Section 5) -- not applied anywhere yet. */
+  --color-bg-dark: #0f172a;
+  --color-surface-dark: #1e293b;
+}
+
+body {
+  background-color: var(--color-bg);
+  color: var(--color-text-primary);
+}

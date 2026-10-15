@@ -3,7 +3,7 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   // @schoolos/db ships plain TypeScript source (no build step) -- Next.js
   // needs to transpile it itself rather than treating it as pre-built JS.
-  transpilePackages: ["@schoolos/db"],
+  transpilePackages: ["@schoolos/db", "@schoolos/ui"],
 };
 
 export default nextConfig;
