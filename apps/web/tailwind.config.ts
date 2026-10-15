@@ -7,28 +7,39 @@ import type { Config } from "tailwindcss";
 // Tailwind's own `sm`/`md`/`lg` steps instead of introducing new names --
 // every existing `rounded-md`, `shadow-sm`, etc. across the app picks up
 // the spec'd values automatically, with no per-file class renaming needed.
+//
+// Every color is wrapped in `rgb(var(--x) / <alpha-value>)`, not a plain
+// `var(--x)` reference -- required for Tailwind's opacity modifiers
+// (`bg-success/10`, `border-border/60`) to work at all. See globals.css's
+// comment for how this was caught (a plain var() reference compiles fine
+// and even renders a correct solid color, but any `/NN` opacity modifier
+// on it silently resolves to fully transparent).
+function withOpacity(variable: string) {
+  return `rgb(var(${variable}) / <alpha-value>)`;
+}
+
 export default {
   content: ["./app/**/*.{ts,tsx}", "./components/**/*.{ts,tsx}", "../../packages/ui/src/**/*.{ts,tsx}"],
   theme: {
     extend: {
       colors: {
         primary: {
-          DEFAULT: "var(--color-primary)",
-          dark: "var(--color-primary-dark)",
-          light: "var(--color-primary-light)",
+          DEFAULT: withOpacity("--color-primary"),
+          dark: withOpacity("--color-primary-dark"),
+          light: withOpacity("--color-primary-light"),
         },
-        accent: "var(--color-accent)",
-        success: "var(--color-success)",
-        warning: "var(--color-warning)",
-        danger: "var(--color-danger)",
-        info: "var(--color-info)",
-        bg: "var(--color-bg)",
-        surface: "var(--color-surface)",
-        border: "var(--color-border)",
+        accent: withOpacity("--color-accent"),
+        success: withOpacity("--color-success"),
+        warning: withOpacity("--color-warning"),
+        danger: withOpacity("--color-danger"),
+        info: withOpacity("--color-info"),
+        bg: withOpacity("--color-bg"),
+        surface: withOpacity("--color-surface"),
+        border: withOpacity("--color-border"),
         ink: {
-          DEFAULT: "var(--color-text-primary)",
-          secondary: "var(--color-text-secondary)",
-          disabled: "var(--color-text-disabled)",
+          DEFAULT: withOpacity("--color-text-primary"),
+          secondary: withOpacity("--color-text-secondary"),
+          disabled: withOpacity("--color-text-disabled"),
         },
       },
       fontFamily: {

@@ -1,6 +1,7 @@
 import { createServerClient, getSessionClaims } from "@schoolos/db";
 import { redirect } from "next/navigation";
 import Link from "next/link";
+import { Button, EmptyState, FeeStatusBadge } from "@schoolos/ui";
 import { RecordPaymentForm } from "./record-payment-form";
 import { SendReminderButton } from "./send-reminder-button";
 
@@ -74,13 +75,13 @@ export default async function FeesPage({
     <main className="mx-auto flex min-h-screen max-w-4xl flex-col gap-6 px-4 py-12">
       <div>
         <h1 className="text-2xl font-semibold">Fees</h1>
-        <p className="mt-1 text-sm text-slate-600">Record payments and send reminders, per term.</p>
+        <p className="mt-1 text-sm text-ink-secondary">Record payments and send reminders, per term.</p>
       </div>
 
       <form method="get" className="flex flex-wrap items-end gap-2">
         <div className="flex flex-col gap-1">
-          <label className="text-xs text-slate-500">Term</label>
-          <select name="termId" defaultValue={termId ?? ""} className="rounded-md border border-slate-300 px-2 py-1.5 text-sm">
+          <label className="text-xs text-ink-secondary">Term</label>
+          <select name="termId" defaultValue={termId ?? ""} className="rounded-sm border border-border px-2 py-1.5 text-sm">
             <option value="">—</option>
             {terms.map((t) => (
               <option key={t.id} value={t.id}>
@@ -90,8 +91,8 @@ export default async function FeesPage({
           </select>
         </div>
         <div className="flex flex-col gap-1">
-          <label className="text-xs text-slate-500">Class</label>
-          <select name="classId" defaultValue={classId ?? ""} className="rounded-md border border-slate-300 px-2 py-1.5 text-sm">
+          <label className="text-xs text-ink-secondary">Class</label>
+          <select name="classId" defaultValue={classId ?? ""} className="rounded-sm border border-border px-2 py-1.5 text-sm">
             <option value="">All</option>
             {(classes ?? []).map((c) => (
               <option key={c.class_id} value={c.class_id}>
@@ -101,17 +102,17 @@ export default async function FeesPage({
           </select>
         </div>
         <div className="flex flex-col gap-1">
-          <label className="text-xs text-slate-500">Status</label>
-          <select name="status" defaultValue={status ?? ""} className="rounded-md border border-slate-300 px-2 py-1.5 text-sm">
+          <label className="text-xs text-ink-secondary">Status</label>
+          <select name="status" defaultValue={status ?? ""} className="rounded-sm border border-border px-2 py-1.5 text-sm">
             <option value="">All</option>
             <option value="Paid">Paid</option>
             <option value="Partial">Partial</option>
             <option value="Owing">Owing</option>
           </select>
         </div>
-        <button type="submit" className="rounded-md border border-slate-300 px-4 py-1.5 text-sm font-medium hover:bg-slate-100">
+        <Button type="submit" variant="secondary">
           Load
-        </button>
+        </Button>
       </form>
 
       {termId ? (
@@ -119,65 +120,52 @@ export default async function FeesPage({
           <div className="flex items-center gap-2">
             <Link
               href={`/fees/export?termId=${termId}${classId ? `&classId=${classId}` : ""}${status ? `&status=${status}` : ""}`}
-              className="rounded-md border border-slate-300 px-3 py-1.5 text-sm font-medium hover:bg-slate-100"
+              className="inline-flex min-h-[44px] items-center justify-center rounded-sm border border-primary px-5 py-3 text-sm font-medium text-primary hover:bg-primary-light"
             >
               Export CSV
             </Link>
             <SendReminderButton termId={termId} />
           </div>
 
-          <table className="w-full text-left text-sm">
-            <thead>
-              <tr className="border-b border-slate-200 text-xs text-slate-500">
-                <th className="py-1 pr-2">Student</th>
-                <th className="py-1 pr-2">Class</th>
-                <th className="py-1 pr-2">Expected</th>
-                <th className="py-1 pr-2">Paid</th>
-                <th className="py-1 pr-2">Status</th>
-                <th className="py-1">Record payment</th>
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map((r) => (
-                <tr key={r.enrollmentId} className="border-b border-slate-100">
-                  <td className="py-2 pr-2">{r.name}</td>
-                  <td className="py-2 pr-2 text-slate-500">{r.className ?? "—"}</td>
-                  <td className="py-2 pr-2">{r.amountExpected}</td>
-                  <td className="py-2 pr-2">{r.amountPaid}</td>
-                  <td className="py-2 pr-2">
-                    <span
-                      className={`rounded-full px-2 py-0.5 text-xs font-medium ${
-                        r.status === "Paid"
-                          ? "bg-green-100 text-green-800"
-                          : r.status === "Partial"
-                            ? "bg-amber-100 text-amber-800"
-                            : "bg-red-100 text-red-800"
-                      }`}
-                    >
-                      {r.status}
-                    </span>
-                  </td>
-                  <td className="py-2">
-                    <RecordPaymentForm
-                      enrollmentId={r.enrollmentId}
-                      termId={termId}
-                      currentExpected={r.amountExpected}
-                    />
-                  </td>
+          {rows.length === 0 ? (
+            <EmptyState message="No students match these filters." />
+          ) : (
+            <table className="w-full text-left text-sm">
+              <thead>
+                <tr className="border-b border-border text-xs text-ink-secondary">
+                  <th className="py-1 pr-2">Student</th>
+                  <th className="py-1 pr-2">Class</th>
+                  <th className="py-1 pr-2">Expected</th>
+                  <th className="py-1 pr-2">Paid</th>
+                  <th className="py-1 pr-2">Status</th>
+                  <th className="py-1">Record payment</th>
                 </tr>
-              ))}
-              {rows.length === 0 ? (
-                <tr>
-                  <td colSpan={6} className="py-4 text-center text-sm text-slate-500">
-                    No students match these filters.
-                  </td>
-                </tr>
-              ) : null}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {rows.map((r) => (
+                  <tr key={r.enrollmentId} className="border-b border-border/60">
+                    <td className="py-2 pr-2">{r.name}</td>
+                    <td className="py-2 pr-2 text-ink-secondary">{r.className ?? "—"}</td>
+                    <td className="py-2 pr-2">{r.amountExpected}</td>
+                    <td className="py-2 pr-2">{r.amountPaid}</td>
+                    <td className="py-2 pr-2">
+                      <FeeStatusBadge status={r.status} />
+                    </td>
+                    <td className="py-2">
+                      <RecordPaymentForm
+                        enrollmentId={r.enrollmentId}
+                        termId={termId}
+                        currentExpected={r.amountExpected}
+                      />
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
         </div>
       ) : (
-        <p className="text-sm text-slate-500">Select a term to view fee status.</p>
+        <p className="text-sm text-ink-secondary">Select a term to view fee status.</p>
       )}
     </main>
   );

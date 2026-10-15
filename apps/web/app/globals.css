@@ -3,36 +3,48 @@
 @tailwind utilities;
 
 /* Doc 18 Section 1 -- the literal design-token source of truth. Values are
-   copied verbatim from the spec, not approximated against a stock Tailwind
-   palette (an earlier pass through this codebase used Tailwind's `slate-*`
-   scale ad hoc, which is visually close but not identical to these -- that
-   gap is being closed screen by screen as part of Milestone 6). Dark-mode
-   values are defined but NOT wired to any toggle -- Doc 17/18 both flag
-   dark mode as an open product decision, not yet confirmed in scope. */
+   copied verbatim from the spec (converted to "R G B" channel triplets,
+   not approximated against a stock Tailwind palette -- an earlier pass
+   through this codebase used Tailwind's `slate-*` scale ad hoc, which is
+   visually close but not identical to these; that gap is being closed
+   screen by screen as part of Milestone 6). Dark-mode values are defined
+   but NOT wired to any toggle -- Doc 17/18 both flag dark mode as an open
+   product decision, not yet confirmed in scope.
+
+   Channel-triplet format (`17 24 39`, not `#111827`) is required, not
+   stylistic -- it lets tailwind.config.ts wrap each one in
+   `rgb(var(--x) / <alpha-value>)`, which is what makes Tailwind's opacity
+   modifiers (`bg-success/10`, `border-border/60`, etc.) actually apply an
+   alpha channel. A plain `#hex` custom property can be used as a solid
+   color but silently renders fully transparent under any `/NN` modifier --
+   caught live via computed-style inspection in the browser (a status
+   badge's hex color came back correct, but its tinted background came
+   back `rgba(0,0,0,0)`), not something a visual screenshot alone made
+   obvious. */
 :root {
-  --color-primary: #2563eb;
-  --color-primary-dark: #1e40af;
-  --color-primary-light: #dbeafe;
-  --color-accent: #f59e0b;
+  --color-primary: 37 99 235;
+  --color-primary-dark: 30 64 175;
+  --color-primary-light: 219 234 254;
+  --color-accent: 245 158 11;
 
-  --color-success: #16a34a;
-  --color-warning: #d97706;
-  --color-danger: #dc2626;
-  --color-info: #0891b2;
+  --color-success: 22 163 74;
+  --color-warning: 217 119 6;
+  --color-danger: 220 38 38;
+  --color-info: 8 145 178;
 
-  --color-bg: #fafafa;
-  --color-surface: #ffffff;
-  --color-border: #e5e7eb;
-  --color-text-primary: #111827;
-  --color-text-secondary: #6b7280;
-  --color-text-disabled: #9ca3af;
+  --color-bg: 250 250 250;
+  --color-surface: 255 255 255;
+  --color-border: 229 231 235;
+  --color-text-primary: 17 24 39;
+  --color-text-secondary: 107 114 128;
+  --color-text-disabled: 156 163 175;
 
   /* Open decision (Doc 18 Section 5) -- not applied anywhere yet. */
-  --color-bg-dark: #0f172a;
-  --color-surface-dark: #1e293b;
+  --color-bg-dark: 15 23 42;
+  --color-surface-dark: 30 41 59;
 }
 
 body {
-  background-color: var(--color-bg);
-  color: var(--color-text-primary);
+  background-color: rgb(var(--color-bg));
+  color: rgb(var(--color-text-primary));
 }
