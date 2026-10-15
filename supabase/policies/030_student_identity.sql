@@ -10,6 +10,12 @@
 
 alter table "PlatformStudent" enable row level security;
 
+-- Third OR clause (TransferRequest) added by migration 050: an outgoing
+-- transfer request's PlatformStudent isn't reachable via enrollment or
+-- family relationship yet, since the whole point of the request is that
+-- the student isn't enrolled at the requesting school. Not scoped to
+-- Pending only -- an admin still needs to see who a resolved request was
+-- about.
 create policy "platformstudent_select_via_enrollment" on "PlatformStudent"
   as permissive for select to authenticated
   using (
@@ -23,6 +29,11 @@ create policy "platformstudent_select_via_enrollment" on "PlatformStudent"
       select 1 from "FamilyStudentRelationship" fsr
       where fsr.platform_student_id = "PlatformStudent".platform_student_id
         and fsr.membership_id = auth_membership_id()
+    )
+    or exists (
+      select 1 from "TransferRequest" tr
+      where tr.platform_student_id = "PlatformStudent".platform_student_id
+        and (tr.from_school_id = auth_school_id() or tr.to_school_id = auth_school_id())
     )
   );
 
