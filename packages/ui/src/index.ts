@@ -9,6 +9,8 @@ export { Skeleton } from "./primitives/Skeleton";
 export { Field, type FieldProps } from "./composite/Field";
 export { EmptyState } from "./composite/EmptyState";
 export { ErrorState } from "./composite/ErrorState";
+export { TableSkeleton } from "./composite/TableSkeleton";
+export { CardGridSkeleton } from "./composite/CardGridSkeleton";
 export {
   FeeStatusBadge,
   type FeeStatus,
