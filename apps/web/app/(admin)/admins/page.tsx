@@ -26,7 +26,7 @@ export default async function AdminsPage() {
     <main className="mx-auto flex min-h-screen max-w-3xl flex-col gap-6 px-4 py-12">
       <div>
         <h1 className="text-2xl font-semibold">School admins</h1>
-        <p className="mt-1 text-sm text-slate-600">
+        <p className="mt-1 text-sm text-ink-secondary">
           Optional -- a school can have at most 2 admins. You can add or skip this and come back
           later.
         </p>
@@ -36,15 +36,15 @@ export default async function AdminsPage() {
         {(admins ?? []).map((admin) => (
           <li
             key={admin.admin_id}
-            className="flex items-center justify-between rounded-md border border-slate-200 p-3 text-sm"
+            className="flex items-center justify-between rounded-md border border-border p-3 text-sm"
           >
             <span>
               {admin.name}
-              {admin.admin_id === claims.admin_id ? <span className="text-slate-500"> (you)</span> : null}
-              {admin.contact_info ? <span className="text-slate-500"> — {admin.contact_info}</span> : null}
+              {admin.admin_id === claims.admin_id ? <span className="text-ink-secondary"> (you)</span> : null}
+              {admin.contact_info ? <span className="text-ink-secondary"> — {admin.contact_info}</span> : null}
             </span>
             <span className="flex items-center gap-3">
-              <span className="text-xs text-slate-500">{admin.activation_status}</span>
+              <span className="text-xs text-ink-secondary">{admin.activation_status}</span>
               {admin.admin_id !== claims.admin_id ? <RemoveAdminButton adminId={admin.admin_id} /> : null}
             </span>
           </li>
@@ -52,14 +52,14 @@ export default async function AdminsPage() {
       </ul>
 
       {atCap ? (
-        <p className="text-sm text-slate-500">This school already has 2 admins (the V1 maximum).</p>
+        <p className="text-sm text-ink-secondary">This school already has 2 admins (the V1 maximum).</p>
       ) : (
         <SecondAdminForm />
       )}
 
       <Link
         href="/people/teachers"
-        className="self-start rounded-md bg-slate-900 px-6 py-3 font-medium text-white hover:bg-slate-700"
+        className="self-start rounded-md bg-primary px-6 py-3 font-medium text-white hover:bg-primary-dark"
       >
         Continue to people setup
       </Link>

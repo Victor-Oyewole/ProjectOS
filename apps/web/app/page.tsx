@@ -7,17 +7,17 @@ export default function HomePage() {
   return (
     <main className="mx-auto flex min-h-screen max-w-2xl flex-col items-center justify-center gap-6 px-4 text-center">
       <h1 className="text-3xl font-semibold">SchoolOS</h1>
-      <p className="text-slate-600">
+      <p className="text-ink-secondary">
         Run your school&rsquo;s attendance, assignments, fees, and family communication in one
         place.
       </p>
       <Link
         href="/register"
-        className="rounded-md bg-slate-900 px-6 py-3 font-medium text-white hover:bg-slate-700"
+        className="rounded-md bg-primary px-6 py-3 font-medium text-white hover:bg-primary-dark"
       >
         Register your school
       </Link>
-      <Link href="/login" className="text-sm text-slate-600 underline hover:text-slate-900">
+      <Link href="/login" className="text-sm text-ink-secondary underline hover:text-ink">
         Already registered? Log in
       </Link>
     </main>

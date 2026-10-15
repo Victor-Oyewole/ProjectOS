@@ -21,21 +21,21 @@ export function DailyNoteForm({
 
   if (classes.length === 0) {
     return (
-      <p className="text-sm text-slate-500">
+      <p className="text-sm text-ink-secondary">
         You aren&rsquo;t assigned to any class yet -- ask your school admin to set this up.
       </p>
     );
   }
 
   return (
-    <form action={formAction} className="flex flex-col gap-3 rounded-md border border-slate-200 p-4">
+    <form action={formAction} className="flex flex-col gap-3 rounded-md border border-border p-4">
       <div className="flex flex-wrap gap-2">
         <div className="flex flex-col gap-1">
-          <label className="text-xs text-slate-500">Class</label>
+          <label className="text-xs text-ink-secondary">Class</label>
           <select
             value={classId}
             onChange={(e) => setClassId(e.target.value)}
-            className="rounded-md border border-slate-300 px-2 py-1.5 text-sm"
+            className="rounded-md border border-border px-2 py-1.5 text-sm"
           >
             <option value="">—</option>
             {classes.map((c) => (
@@ -46,12 +46,12 @@ export function DailyNoteForm({
           </select>
         </div>
         <div className="flex flex-col gap-1">
-          <label className="text-xs text-slate-500">Student</label>
+          <label className="text-xs text-ink-secondary">Student</label>
           <select
             name="enrollmentId"
             required
             disabled={!classId}
-            className="rounded-md border border-slate-300 px-2 py-1.5 text-sm"
+            className="rounded-md border border-border px-2 py-1.5 text-sm"
           >
             <option value="">—</option>
             {classStudents.map((s) => (
@@ -62,8 +62,8 @@ export function DailyNoteForm({
           </select>
         </div>
         <div className="flex flex-col gap-1">
-          <label className="text-xs text-slate-500">Category</label>
-          <select name="category" required className="rounded-md border border-slate-300 px-2 py-1.5 text-sm">
+          <label className="text-xs text-ink-secondary">Category</label>
+          <select name="category" required className="rounded-md border border-border px-2 py-1.5 text-sm">
             <option value="general">General</option>
             <option value="academic">Academic</option>
             <option value="behavior">Behavior</option>
@@ -73,18 +73,18 @@ export function DailyNoteForm({
       </div>
 
       <div className="flex flex-col gap-1">
-        <label className="text-xs text-slate-500">Note</label>
-        <textarea name="noteText" required rows={3} className="rounded-md border border-slate-300 px-2 py-1.5 text-sm" />
+        <label className="text-xs text-ink-secondary">Note</label>
+        <textarea name="noteText" required rows={3} className="rounded-md border border-border px-2 py-1.5 text-sm" />
       </div>
 
       <button
         type="submit"
         disabled={isPending}
-        className="self-start rounded-md bg-slate-900 px-4 py-1.5 text-sm font-medium text-white hover:bg-slate-700 disabled:opacity-60"
+        className="self-start rounded-md bg-primary px-4 py-1.5 text-sm font-medium text-white hover:bg-primary-dark disabled:opacity-60"
       >
         Send note
       </button>
-      {state?.error ? <p className="text-sm text-red-600">{state.error}</p> : null}
+      {state?.error ? <p className="text-sm text-danger">{state.error}</p> : null}
     </form>
   );
 }

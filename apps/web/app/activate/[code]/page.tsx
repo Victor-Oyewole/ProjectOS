@@ -13,7 +13,7 @@ export default async function ActivatePage({ params }: { params: Promise<{ code:
     return (
       <main className="mx-auto flex min-h-screen max-w-md flex-col items-center justify-center gap-4 px-4 text-center">
         <h1 className="text-2xl font-semibold">This activation link isn&rsquo;t valid</h1>
-        <p className="text-slate-600">
+        <p className="text-ink-secondary">
           {error?.message ?? "It may have expired, been used already, or been revoked."} Ask your
           school admin for a new link.
         </p>
@@ -27,7 +27,7 @@ export default async function ActivatePage({ params }: { params: Promise<{ code:
     <main className="mx-auto flex min-h-screen max-w-md flex-col items-center justify-center gap-6 px-4 py-12">
       <div className="text-center">
         <h1 className="text-2xl font-semibold">Activate your account</h1>
-        <p className="mt-1 text-sm text-slate-600">
+        <p className="mt-1 text-sm text-ink-secondary">
           {info.name} &mdash; {info.school_name}
         </p>
       </div>

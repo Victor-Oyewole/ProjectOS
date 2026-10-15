@@ -37,7 +37,7 @@ export function RecordPaymentForm({
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="rounded-md border border-slate-300 px-2 py-1 text-xs font-medium hover:bg-slate-100"
+        className="rounded-md border border-border px-2 py-1 text-xs font-medium hover:bg-primary-light"
       >
         Record payment
       </button>
@@ -45,12 +45,12 @@ export function RecordPaymentForm({
   }
 
   return (
-    <form action={formAction} className="flex flex-col gap-2 rounded-md border border-slate-200 bg-slate-50 p-3">
+    <form action={formAction} className="flex flex-col gap-2 rounded-md border border-border bg-bg p-3">
       <input type="hidden" name="enrollmentId" value={enrollmentId} />
       <input type="hidden" name="termId" value={termId} />
       <div className="flex flex-wrap gap-2">
         <div className="flex flex-col gap-1">
-          <label className="text-xs text-slate-500">Amount expected</label>
+          <label className="text-xs text-ink-secondary">Amount expected</label>
           <input
             name="amountExpected"
             type="number"
@@ -58,11 +58,11 @@ export function RecordPaymentForm({
             step="0.01"
             defaultValue={currentExpected}
             required
-            className="w-28 rounded-md border border-slate-300 px-2 py-1 text-sm"
+            className="w-28 rounded-md border border-border px-2 py-1 text-sm"
           />
         </div>
         <div className="flex flex-col gap-1">
-          <label className="text-xs text-slate-500">Amount received now</label>
+          <label className="text-xs text-ink-secondary">Amount received now</label>
           <input
             name="amountReceived"
             type="number"
@@ -70,35 +70,35 @@ export function RecordPaymentForm({
             step="0.01"
             defaultValue="0"
             required
-            className="w-28 rounded-md border border-slate-300 px-2 py-1 text-sm"
+            className="w-28 rounded-md border border-border px-2 py-1 text-sm"
           />
         </div>
         <div className="flex flex-col gap-1">
-          <label className="text-xs text-slate-500">Method</label>
-          <input name="paymentMethod" className="w-28 rounded-md border border-slate-300 px-2 py-1 text-sm" />
+          <label className="text-xs text-ink-secondary">Method</label>
+          <input name="paymentMethod" className="w-28 rounded-md border border-border px-2 py-1 text-sm" />
         </div>
       </div>
       <div className="flex flex-col gap-1">
-        <label className="text-xs text-slate-500">Notes (optional)</label>
-        <input name="notes" className="rounded-md border border-slate-300 px-2 py-1 text-sm" />
+        <label className="text-xs text-ink-secondary">Notes (optional)</label>
+        <input name="notes" className="rounded-md border border-border px-2 py-1 text-sm" />
       </div>
       <div className="flex gap-2">
         <button
           type="submit"
           disabled={isPending}
-          className="rounded-md bg-slate-900 px-3 py-1.5 text-xs font-medium text-white hover:bg-slate-700 disabled:opacity-60"
+          className="rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-white hover:bg-primary-dark disabled:opacity-60"
         >
           Save
         </button>
         <button
           type="button"
           onClick={() => setOpen(false)}
-          className="rounded-md border border-slate-300 px-3 py-1.5 text-xs font-medium hover:bg-slate-100"
+          className="rounded-md border border-border px-3 py-1.5 text-xs font-medium hover:bg-primary-light"
         >
           Cancel
         </button>
       </div>
-      {state?.error ? <p className="text-xs text-red-600">{state.error}</p> : null}
+      {state?.error ? <p className="text-xs text-danger">{state.error}</p> : null}
     </form>
   );
 }

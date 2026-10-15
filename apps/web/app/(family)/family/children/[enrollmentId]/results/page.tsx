@@ -17,15 +17,15 @@ export default async function ChildResultsPage({
   return (
     <ul className="flex flex-col gap-2">
       {(rows ?? []).map((r, i) => (
-        <li key={i} className="flex items-center justify-between rounded-md border border-slate-200 p-3 text-sm">
+        <li key={i} className="flex items-center justify-between rounded-md border border-border p-3 text-sm">
           <span>
             {r.Assessment?.name} — {r.Assessment?.Subject?.name}{" "}
-            <span className="text-slate-500">({r.Assessment?.Term?.name})</span>
+            <span className="text-ink-secondary">({r.Assessment?.Term?.name})</span>
           </span>
           <span className="font-medium">{r.value}</span>
         </li>
       ))}
-      {(rows ?? []).length === 0 ? <li className="text-sm text-slate-500">No results recorded yet.</li> : null}
+      {(rows ?? []).length === 0 ? <li className="text-sm text-ink-secondary">No results recorded yet.</li> : null}
     </ul>
   );
 }

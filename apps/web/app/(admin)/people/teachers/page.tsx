@@ -15,17 +15,17 @@ export default async function TeachersPage() {
         {(teachers ?? []).map((teacher) => (
           <li
             key={teacher.teacher_id}
-            className="flex items-center justify-between rounded-md border border-slate-200 p-3 text-sm"
+            className="flex items-center justify-between rounded-md border border-border p-3 text-sm"
           >
             <span>
               {teacher.name}
-              {teacher.staff_id ? <span className="text-slate-500"> ({teacher.staff_id})</span> : null}
+              {teacher.staff_id ? <span className="text-ink-secondary"> ({teacher.staff_id})</span> : null}
             </span>
-            <span className="text-xs text-slate-500">{teacher.activation_status}</span>
+            <span className="text-xs text-ink-secondary">{teacher.activation_status}</span>
           </li>
         ))}
         {(teachers ?? []).length === 0 ? (
-          <li className="text-sm text-slate-500">No teachers yet.</li>
+          <li className="text-sm text-ink-secondary">No teachers yet.</li>
         ) : null}
       </ul>
       <TeacherForm />

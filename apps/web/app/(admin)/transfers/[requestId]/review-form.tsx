@@ -27,7 +27,7 @@ export function ReviewForm({ requestId }: { requestId: string }) {
 
   return (
     <div className="flex flex-col gap-6">
-      <form action={approveAction} className="flex flex-col gap-3 rounded-md border border-slate-200 p-4">
+      <form action={approveAction} className="flex flex-col gap-3 rounded-md border border-border p-4">
         <input type="hidden" name="requestId" value={requestId} />
         <p className="text-sm font-medium">Approve -- select which records to release</p>
         <div className="flex flex-col gap-2">
@@ -39,34 +39,34 @@ export function ReviewForm({ requestId }: { requestId: string }) {
           ))}
         </div>
         <div className="flex flex-col gap-1">
-          <label className="text-xs text-slate-500">Notes (optional)</label>
-          <input name="notes" className="rounded-md border border-slate-300 px-2 py-1.5 text-sm" />
+          <label className="text-xs text-ink-secondary">Notes (optional)</label>
+          <input name="notes" className="rounded-md border border-border px-2 py-1.5 text-sm" />
         </div>
         <button
           type="submit"
           disabled={approvePending}
-          className="self-start rounded-md bg-slate-900 px-4 py-1.5 text-sm font-medium text-white hover:bg-slate-700 disabled:opacity-60"
+          className="self-start rounded-md bg-primary px-4 py-1.5 text-sm font-medium text-white hover:bg-primary-dark disabled:opacity-60"
         >
           Approve & generate transfer package
         </button>
-        {approveState?.error ? <p className="text-sm text-red-600">{approveState.error}</p> : null}
+        {approveState?.error ? <p className="text-sm text-danger">{approveState.error}</p> : null}
       </form>
 
-      <form action={denyAction} className="flex flex-col gap-3 rounded-md border border-slate-200 p-4">
+      <form action={denyAction} className="flex flex-col gap-3 rounded-md border border-border p-4">
         <input type="hidden" name="requestId" value={requestId} />
         <p className="text-sm font-medium">Deny</p>
         <div className="flex flex-col gap-1">
-          <label className="text-xs text-slate-500">Reason (optional)</label>
-          <input name="reason" className="rounded-md border border-slate-300 px-2 py-1.5 text-sm" />
+          <label className="text-xs text-ink-secondary">Reason (optional)</label>
+          <input name="reason" className="rounded-md border border-border px-2 py-1.5 text-sm" />
         </div>
         <button
           type="submit"
           disabled={denyPending}
-          className="self-start rounded-md border border-red-300 px-4 py-1.5 text-sm font-medium text-red-700 hover:bg-red-50 disabled:opacity-60"
+          className="self-start rounded-md border border-danger/30 px-4 py-1.5 text-sm font-medium text-danger hover:bg-danger/10 disabled:opacity-60"
         >
           Deny request
         </button>
-        {denyState?.error ? <p className="text-sm text-red-600">{denyState.error}</p> : null}
+        {denyState?.error ? <p className="text-sm text-danger">{denyState.error}</p> : null}
       </form>
     </div>
   );

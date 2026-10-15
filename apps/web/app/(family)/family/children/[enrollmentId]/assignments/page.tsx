@@ -57,15 +57,15 @@ export default async function ChildAssignmentsPage({
       {assignments.map((a) => {
         const status = statusByAssignment.get(a.assignment_id) ?? "Viewed";
         return (
-          <div key={a.assignment_id} className="rounded-md border border-slate-200 p-4">
+          <div key={a.assignment_id} className="rounded-md border border-border p-4">
             <div className="flex items-center justify-between">
               <p className="font-medium">
-                {a.title} <span className="font-normal text-slate-500">({a.Subject?.name})</span>
+                {a.title} <span className="font-normal text-ink-secondary">({a.Subject?.name})</span>
               </p>
-              <span className="text-xs text-slate-500">{status}</span>
+              <span className="text-xs text-ink-secondary">{status}</span>
             </div>
-            {a.instructions ? <p className="mt-2 text-sm text-slate-700">{a.instructions}</p> : null}
-            <p className="mt-2 text-xs text-slate-500">Available {new Date(a.available_at).toLocaleString()}</p>
+            {a.instructions ? <p className="mt-2 text-sm text-ink">{a.instructions}</p> : null}
+            <p className="mt-2 text-xs text-ink-secondary">Available {new Date(a.available_at).toLocaleString()}</p>
             {status !== "Acknowledged" ? (
               <div className="mt-3">
                 <AcknowledgeButton assignmentId={a.assignment_id} enrollmentId={enrollmentId} />
@@ -74,7 +74,7 @@ export default async function ChildAssignmentsPage({
           </div>
         );
       })}
-      {assignments.length === 0 ? <p className="text-sm text-slate-500">No assignments available yet.</p> : null}
+      {assignments.length === 0 ? <p className="text-sm text-ink-secondary">No assignments available yet.</p> : null}
     </div>
   );
 }

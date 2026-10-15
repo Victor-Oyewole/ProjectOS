@@ -22,16 +22,16 @@ export default async function FamiliesPage() {
         {(memberships ?? []).map((membership) => (
           <li
             key={membership.membership_id}
-            className="flex items-center justify-between rounded-md border border-slate-200 p-3 text-sm"
+            className="flex items-center justify-between rounded-md border border-border p-3 text-sm"
           >
             <span>
               {membership.Guardian.map((g) => g.name).join(", ") || "(unnamed guardian)"}
             </span>
-            <span className="text-xs text-slate-500">{membership.status}</span>
+            <span className="text-xs text-ink-secondary">{membership.status}</span>
           </li>
         ))}
         {(memberships ?? []).length === 0 ? (
-          <li className="text-sm text-slate-500">No families yet.</li>
+          <li className="text-sm text-ink-secondary">No families yet.</li>
         ) : null}
       </ul>
       <FamilyForm students={students} />

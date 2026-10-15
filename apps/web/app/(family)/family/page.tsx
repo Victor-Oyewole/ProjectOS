@@ -74,7 +74,7 @@ export default async function FamilyDashboardPage() {
       <h1 className="text-2xl font-semibold">Your children</h1>
       <ul className="flex flex-col gap-3">
         {children.map((child) => (
-          <li key={child.platformStudentId} className="rounded-md border border-slate-200 p-4">
+          <li key={child.platformStudentId} className="rounded-md border border-border p-4">
             {child.enrollmentId ? (
               <Link href={`/family/children/${child.enrollmentId}`} className="font-medium hover:underline">
                 {child.name}
@@ -82,7 +82,7 @@ export default async function FamilyDashboardPage() {
             ) : (
               <span className="font-medium">{child.name}</span>
             )}
-            <p className="mt-1 text-sm text-slate-600">
+            <p className="mt-1 text-sm text-ink-secondary">
               {child.className ?? "No current class"}
               {" — "}
               {child.assignmentCount} assignment{child.assignmentCount === 1 ? "" : "s"} available
@@ -90,7 +90,7 @@ export default async function FamilyDashboardPage() {
             </p>
           </li>
         ))}
-        {children.length === 0 ? <li className="text-sm text-slate-500">No children linked to this account.</li> : null}
+        {children.length === 0 ? <li className="text-sm text-ink-secondary">No children linked to this account.</li> : null}
       </ul>
     </div>
   );

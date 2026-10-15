@@ -18,17 +18,17 @@ export default async function StudentsPage() {
         {(enrollments ?? []).map((enrollment) => (
           <li
             key={enrollment.enrollment_id}
-            className="flex items-center justify-between rounded-md border border-slate-200 p-3 text-sm"
+            className="flex items-center justify-between rounded-md border border-border p-3 text-sm"
           >
             <span>
               {enrollment.PlatformStudent?.name}{" "}
-              <span className="text-slate-500">({enrollment.PlatformStudent?.dob})</span>
+              <span className="text-ink-secondary">({enrollment.PlatformStudent?.dob})</span>
             </span>
-            <span className="text-xs text-slate-500">{enrollment.status}</span>
+            <span className="text-xs text-ink-secondary">{enrollment.status}</span>
           </li>
         ))}
         {(enrollments ?? []).length === 0 ? (
-          <li className="text-sm text-slate-500">No students yet.</li>
+          <li className="text-sm text-ink-secondary">No students yet.</li>
         ) : null}
       </ul>
       <StudentForm classes={classes ?? []} />

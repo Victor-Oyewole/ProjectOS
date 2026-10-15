@@ -46,22 +46,22 @@ export function StudentCsvImport() {
   const hasUnresolved = rows?.some((r) => r.decision === null) ?? false;
 
   return (
-    <div className="flex flex-col gap-3 rounded-md border border-slate-200 p-4">
+    <div className="flex flex-col gap-3 rounded-md border border-border p-4">
       <p className="text-sm font-medium">Bulk import CSV</p>
-      <p className="text-xs text-slate-500">
+      <p className="text-xs text-ink-secondary">
         Columns: <code>name</code>, <code>dob</code> (both required), <code>class</code> (optional, matched by
         name).
       </p>
       <input type="file" accept=".csv,text/csv" onChange={handleFile} className="text-sm" />
 
-      {error ? <p className="text-sm text-red-600">{error}</p> : null}
-      {done ? <p className="text-sm text-green-700">Import complete.</p> : null}
+      {error ? <p className="text-sm text-danger">{error}</p> : null}
+      {done ? <p className="text-sm text-success">Import complete.</p> : null}
 
       {rows ? (
         <div className="flex flex-col gap-2">
           <table className="w-full text-left text-sm">
             <thead>
-              <tr className="border-b border-slate-200 text-xs text-slate-500">
+              <tr className="border-b border-border text-xs text-ink-secondary">
                 <th className="py-1 pr-2">Row</th>
                 <th className="py-1 pr-2">Name</th>
                 <th className="py-1 pr-2">DOB</th>
@@ -73,22 +73,22 @@ export function StudentCsvImport() {
               {rows.map((row) => (
                 <tr
                   key={row.rowNumber}
-                  className={row.errors.length > 0 ? "bg-red-50" : row.decision === null ? "bg-amber-50" : undefined}
+                  className={row.errors.length > 0 ? "bg-danger/10" : row.decision === null ? "bg-warning/10" : undefined}
                 >
-                  <td className="py-1 pr-2 align-top text-slate-500">{row.rowNumber}</td>
+                  <td className="py-1 pr-2 align-top text-ink-secondary">{row.rowNumber}</td>
                   <td className="py-1 pr-2 align-top">{row.name || "—"}</td>
                   <td className="py-1 pr-2 align-top">{row.dob || "—"}</td>
                   <td className="py-1 pr-2 align-top">{row.className || "—"}</td>
                   <td className="py-1 align-top">
                     {row.errors.length > 0 ? (
-                      <span className="text-red-600">{row.errors.join("; ")}</span>
+                      <span className="text-danger">{row.errors.join("; ")}</span>
                     ) : null}
                     {row.warnings.length > 0 ? (
-                      <span className="block text-amber-700">{row.warnings.join("; ")}</span>
+                      <span className="block text-warning">{row.warnings.join("; ")}</span>
                     ) : null}
                     {row.decision === null ? (
                       <div className="flex flex-col gap-1 pt-1">
-                        <span className="text-amber-700">Possible existing student -- confirm or add as new:</span>
+                        <span className="text-warning">Possible existing student -- confirm or add as new:</span>
                         <ul className="flex flex-col gap-1">
                           {row.candidates.map((c) => (
                             <li key={c.platform_student_id} className="flex items-center justify-between gap-2">
@@ -99,7 +99,7 @@ export function StudentCsvImport() {
                                 type="button"
                                 disabled={isPending}
                                 onClick={() => resolveRow(row.rowNumber, "confirm_match", c.platform_student_id)}
-                                className="rounded-md border border-slate-300 px-2 py-0.5 text-xs font-medium hover:bg-slate-100 disabled:opacity-60"
+                                className="rounded-md border border-border px-2 py-0.5 text-xs font-medium hover:bg-primary-light disabled:opacity-60"
                               >
                                 Same student
                               </button>
@@ -110,13 +110,13 @@ export function StudentCsvImport() {
                           type="button"
                           disabled={isPending}
                           onClick={() => resolveRow(row.rowNumber, "new", null)}
-                          className="self-start rounded-md bg-slate-900 px-2 py-0.5 text-xs font-medium text-white hover:bg-slate-700 disabled:opacity-60"
+                          className="self-start rounded-md bg-primary px-2 py-0.5 text-xs font-medium text-white hover:bg-primary-dark disabled:opacity-60"
                         >
                           Different student — add as new
                         </button>
                       </div>
                     ) : row.candidates.length > 0 ? (
-                      <span className="text-green-700">
+                      <span className="text-success">
                         {row.decision === "new" ? "Will add as new" : "Will match existing"}
                       </span>
                     ) : null}
@@ -129,14 +129,14 @@ export function StudentCsvImport() {
             type="button"
             disabled={isPending || hasErrors || hasUnresolved}
             onClick={handleConfirm}
-            className="self-start rounded-md bg-slate-900 px-4 py-1.5 text-sm font-medium text-white hover:bg-slate-700 disabled:opacity-60"
+            className="self-start rounded-md bg-primary px-4 py-1.5 text-sm font-medium text-white hover:bg-primary-dark disabled:opacity-60"
           >
             Confirm import ({rows.length} {rows.length === 1 ? "row" : "rows"})
           </button>
           {hasErrors ? (
-            <p className="text-xs text-red-600">Fix every row before confirming -- no partial imports.</p>
+            <p className="text-xs text-danger">Fix every row before confirming -- no partial imports.</p>
           ) : hasUnresolved ? (
-            <p className="text-xs text-amber-700">Resolve every ambiguous match before confirming.</p>
+            <p className="text-xs text-warning">Resolve every ambiguous match before confirming.</p>
           ) : null}
         </div>
       ) : null}

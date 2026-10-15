@@ -20,16 +20,16 @@ export default async function FamilyLayout({ children }: { children: React.React
 
   return (
     <main className="mx-auto flex min-h-screen max-w-3xl flex-col gap-6 px-4 py-12">
-      <nav className="flex items-center justify-between border-b border-slate-200 pb-3 text-sm font-medium">
+      <nav className="flex items-center justify-between border-b border-border pb-3 text-sm font-medium">
         <div className="flex gap-4">
-          <Link href="/family" className="hover:text-slate-900">
+          <Link href="/family" className="hover:text-ink">
             Dashboard
           </Link>
         </div>
-        <Link href="/family/notifications" className="flex items-center gap-1 hover:text-slate-900">
+        <Link href="/family/notifications" className="flex items-center gap-1 hover:text-ink">
           <span aria-hidden>🔔</span>
           {unreadCount ? (
-            <span className="rounded-full bg-red-600 px-1.5 py-0.5 text-xs font-semibold text-white">
+            <span className="rounded-full bg-danger px-1.5 py-0.5 text-xs font-semibold text-white">
               {unreadCount}
             </span>
           ) : null}

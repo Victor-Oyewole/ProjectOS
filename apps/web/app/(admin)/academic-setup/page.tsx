@@ -46,7 +46,7 @@ export default async function AcademicSetupPage() {
     <main className="mx-auto flex min-h-screen max-w-3xl flex-col gap-10 px-4 py-12">
       <div>
         <h1 className="text-2xl font-semibold">Academic setup</h1>
-        <p className="mt-1 text-sm text-slate-600">
+        <p className="mt-1 text-sm text-ink-secondary">
           Create at least one session, term, class, and subject before adding teachers, students,
           or families.
         </p>
@@ -56,15 +56,15 @@ export default async function AcademicSetupPage() {
         <h2 className="text-lg font-medium">Academic sessions</h2>
         <ul className="flex flex-col gap-3">
           {(sessions ?? []).map((session) => (
-            <li key={session.session_id} className="rounded-md border border-slate-200 p-3">
+            <li key={session.session_id} className="rounded-md border border-border p-3">
               <p className="font-medium">
                 {session.name}{" "}
-                <span className="font-normal text-slate-500">
+                <span className="font-normal text-ink-secondary">
                   ({session.start_date} – {session.end_date})
                 </span>
               </p>
               {session.Term.length > 0 ? (
-                <ul className="mt-2 flex flex-col gap-1 pl-4 text-sm text-slate-600">
+                <ul className="mt-2 flex flex-col gap-1 pl-4 text-sm text-ink-secondary">
                   {session.Term.map((term) => (
                     <li key={term.term_id}>
                       {term.name}: {term.start_date} – {term.end_date}
@@ -78,7 +78,7 @@ export default async function AcademicSetupPage() {
             </li>
           ))}
           {(sessions ?? []).length === 0 ? (
-            <li className="text-sm text-slate-500">No sessions yet.</li>
+            <li className="text-sm text-ink-secondary">No sessions yet.</li>
           ) : null}
         </ul>
         <NewSessionForm />
@@ -90,13 +90,13 @@ export default async function AcademicSetupPage() {
           {(classes ?? []).map((klass) => (
             <li
               key={klass.class_id}
-              className="rounded-full border border-slate-300 px-3 py-1 text-sm"
+              className="rounded-full border border-border px-3 py-1 text-sm"
             >
               {klass.name}
             </li>
           ))}
           {(classes ?? []).length === 0 ? (
-            <li className="text-sm text-slate-500">No classes yet.</li>
+            <li className="text-sm text-ink-secondary">No classes yet.</li>
           ) : null}
         </ul>
         <NewClassForm />
@@ -108,13 +108,13 @@ export default async function AcademicSetupPage() {
           {(subjects ?? []).map((subject) => (
             <li
               key={subject.subject_id}
-              className="rounded-full border border-slate-300 px-3 py-1 text-sm"
+              className="rounded-full border border-border px-3 py-1 text-sm"
             >
               {subject.name}
             </li>
           ))}
           {(subjects ?? []).length === 0 ? (
-            <li className="text-sm text-slate-500">No subjects yet.</li>
+            <li className="text-sm text-ink-secondary">No subjects yet.</li>
           ) : null}
         </ul>
         <NewSubjectForm />
@@ -124,13 +124,13 @@ export default async function AcademicSetupPage() {
         <h2 className="text-lg font-medium">Teacher assignments</h2>
         <ul className="flex flex-col gap-2">
           {(teacherAssignments ?? []).map((ta) => (
-            <li key={ta.assignment_id} className="rounded-md border border-slate-200 p-3 text-sm">
+            <li key={ta.assignment_id} className="rounded-md border border-border p-3 text-sm">
               {ta.Teacher?.name} — {ta.Class?.name} — {ta.Subject?.name}{" "}
-              <span className="text-slate-500">({ta.AcademicSession?.name})</span>
+              <span className="text-ink-secondary">({ta.AcademicSession?.name})</span>
             </li>
           ))}
           {(teacherAssignments ?? []).length === 0 ? (
-            <li className="text-sm text-slate-500">No teacher assignments yet.</li>
+            <li className="text-sm text-ink-secondary">No teacher assignments yet.</li>
           ) : null}
         </ul>
         <AssignTeacherForm
@@ -145,13 +145,13 @@ export default async function AcademicSetupPage() {
         <h2 className="text-lg font-medium">Assessments</h2>
         <ul className="flex flex-col gap-2">
           {(assessments ?? []).map((a) => (
-            <li key={a.assessment_id} className="rounded-md border border-slate-200 p-3 text-sm">
+            <li key={a.assessment_id} className="rounded-md border border-border p-3 text-sm">
               {a.name} — {a.Class?.name} — {a.Subject?.name}{" "}
-              <span className="text-slate-500">({a.Term?.name})</span>
+              <span className="text-ink-secondary">({a.Term?.name})</span>
             </li>
           ))}
           {(assessments ?? []).length === 0 ? (
-            <li className="text-sm text-slate-500">No assessments yet.</li>
+            <li className="text-sm text-ink-secondary">No assessments yet.</li>
           ) : null}
         </ul>
         <NewAssessmentForm
@@ -163,7 +163,7 @@ export default async function AcademicSetupPage() {
 
       <Link
         href="/admins"
-        className="self-start rounded-md bg-slate-900 px-6 py-3 font-medium text-white hover:bg-slate-700"
+        className="self-start rounded-md bg-primary px-6 py-3 font-medium text-white hover:bg-primary-dark"
       >
         Save &amp; continue
       </Link>

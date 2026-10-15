@@ -23,13 +23,13 @@ export function SendReminderButton({ termId }: { termId: string }) {
         type="button"
         disabled={isPending}
         onClick={handleClick}
-        className="rounded-md border border-slate-300 px-3 py-1.5 text-sm font-medium hover:bg-slate-100 disabled:opacity-60"
+        className="rounded-md border border-border px-3 py-1.5 text-sm font-medium hover:bg-primary-light disabled:opacity-60"
       >
         Send reminder
       </button>
-      {result?.error ? <span className="text-sm text-red-600">{result.error}</span> : null}
+      {result?.error ? <span className="text-sm text-danger">{result.error}</span> : null}
       {result && !result.error ? (
-        <span className="text-sm text-green-700">
+        <span className="text-sm text-success">
           Sent to {result.count} famil{result.count === 1 ? "y" : "ies"}.
         </span>
       ) : null}

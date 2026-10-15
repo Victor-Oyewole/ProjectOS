@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { Button, EmptyState } from "@schoolos/ui";
 import { submitAttendance } from "./actions";
 
 type Status = "Present" | "Absent" | "Late";
@@ -33,7 +34,7 @@ export function AttendanceForm({
   }
 
   if (students.length === 0) {
-    return <p className="text-sm text-slate-500">No students enrolled in this class.</p>;
+    return <EmptyState message="No students enrolled in this class." />;
   }
 
   return (
@@ -42,7 +43,7 @@ export function AttendanceForm({
         {students.map((s) => (
           <li
             key={s.enrollmentId}
-            className="flex items-center justify-between rounded-md border border-slate-200 p-3 text-sm"
+            className="flex items-center justify-between rounded-md border border-border p-3 text-sm"
           >
             <span>{s.name}</span>
             <div className="flex gap-1">
@@ -51,10 +52,10 @@ export function AttendanceForm({
                   key={status}
                   type="button"
                   onClick={() => setStatuses((prev) => ({ ...prev, [s.enrollmentId]: status }))}
-                  className={`rounded-md border px-2 py-1 text-xs font-medium ${
+                  className={`min-h-[44px] rounded-sm border px-3 py-1 text-xs font-medium transition-colors duration-base ease-standard ${
                     statuses[s.enrollmentId] === status
-                      ? "border-slate-900 bg-slate-900 text-white"
-                      : "border-slate-300 hover:bg-slate-100"
+                      ? "border-primary bg-primary text-white"
+                      : "border-border hover:bg-primary-light"
                   }`}
                 >
                   {status}
@@ -64,16 +65,11 @@ export function AttendanceForm({
           </li>
         ))}
       </ul>
-      <button
-        type="button"
-        disabled={isPending}
-        onClick={handleSubmit}
-        className="self-start rounded-md bg-slate-900 px-4 py-1.5 text-sm font-medium text-white hover:bg-slate-700 disabled:opacity-60"
-      >
+      <Button type="button" disabled={isPending} onClick={handleSubmit}>
         Submit attendance
-      </button>
-      {error ? <p className="text-sm text-red-600">{error}</p> : null}
-      {done ? <p className="text-sm text-green-700">Attendance saved.</p> : null}
+      </Button>
+      {error ? <p className="text-sm text-danger">{error}</p> : null}
+      {done ? <p className="text-sm text-success">Attendance saved.</p> : null}
     </div>
   );
 }

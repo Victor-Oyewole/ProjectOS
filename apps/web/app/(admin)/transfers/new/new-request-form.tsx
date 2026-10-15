@@ -65,7 +65,7 @@ export function NewRequestForm() {
 
   if (student && school) {
     return (
-      <div className="flex flex-col gap-3 rounded-md border border-slate-200 p-4">
+      <div className="flex flex-col gap-3 rounded-md border border-border p-4">
         <p className="text-sm">
           Requesting records for <span className="font-medium">{student.name}</span> ({student.dob}) from{" "}
           <span className="font-medium">{school.name}</span>.
@@ -75,19 +75,19 @@ export function NewRequestForm() {
             type="button"
             disabled={isPending}
             onClick={handleSubmit}
-            className="rounded-md bg-slate-900 px-4 py-1.5 text-sm font-medium text-white hover:bg-slate-700 disabled:opacity-60"
+            className="rounded-md bg-primary px-4 py-1.5 text-sm font-medium text-white hover:bg-primary-dark disabled:opacity-60"
           >
             Submit transfer request
           </button>
           <button
             type="button"
             onClick={() => setSchool(null)}
-            className="rounded-md border border-slate-300 px-4 py-1.5 text-sm font-medium hover:bg-slate-100"
+            className="rounded-md border border-border px-4 py-1.5 text-sm font-medium hover:bg-primary-light"
           >
             Back
           </button>
         </div>
-        {error ? <p className="text-sm text-red-600">{error}</p> : null}
+        {error ? <p className="text-sm text-danger">{error}</p> : null}
       </div>
     );
   }
@@ -96,17 +96,17 @@ export function NewRequestForm() {
     if (schoolCandidates) {
       return (
         <div className="flex flex-col gap-3">
-          <p className="text-sm text-slate-600">
+          <p className="text-sm text-ink-secondary">
             Which school is currently holding {student.name}&apos;s records?
           </p>
           <ul className="flex flex-col gap-2">
             {schoolCandidates.map((s) => (
-              <li key={s.school_id} className="flex items-center justify-between rounded-md border border-slate-200 p-3 text-sm">
+              <li key={s.school_id} className="flex items-center justify-between rounded-md border border-border p-3 text-sm">
                 <span>{s.name}</span>
                 <button
                   type="button"
                   onClick={() => setSchool(s)}
-                  className="rounded-md border border-slate-300 px-3 py-1 text-xs font-medium hover:bg-slate-100"
+                  className="rounded-md border border-border px-3 py-1 text-xs font-medium hover:bg-primary-light"
                 >
                   Select
                 </button>
@@ -116,42 +116,42 @@ export function NewRequestForm() {
           <button
             type="button"
             onClick={() => setSchoolCandidates(null)}
-            className="self-start text-sm text-slate-500 hover:text-slate-900"
+            className="self-start text-sm text-ink-secondary hover:text-ink"
           >
             Search again
           </button>
-          {error ? <p className="text-sm text-red-600">{error}</p> : null}
+          {error ? <p className="text-sm text-danger">{error}</p> : null}
         </div>
       );
     }
 
     return (
       <form action={handleSchoolSearch} className="flex flex-col gap-3">
-        <p className="text-sm text-slate-600">
+        <p className="text-sm text-ink-secondary">
           Found <span className="font-medium">{student.name}</span> ({student.dob}). Now search for the releasing
           school by name.
         </p>
         <div className="flex flex-wrap items-end gap-2">
           <div className="flex flex-col gap-1">
-            <label className="text-xs text-slate-500">Releasing school name</label>
-            <input name="name" required className="w-64 rounded-md border border-slate-300 px-2 py-1.5 text-sm" />
+            <label className="text-xs text-ink-secondary">Releasing school name</label>
+            <input name="name" required className="w-64 rounded-md border border-border px-2 py-1.5 text-sm" />
           </div>
           <button
             type="submit"
             disabled={isPending}
-            className="rounded-md bg-slate-900 px-4 py-1.5 text-sm font-medium text-white hover:bg-slate-700 disabled:opacity-60"
+            className="rounded-md bg-primary px-4 py-1.5 text-sm font-medium text-white hover:bg-primary-dark disabled:opacity-60"
           >
             Search school
           </button>
           <button
             type="button"
             onClick={() => setStudent(null)}
-            className="rounded-md border border-slate-300 px-4 py-1.5 text-sm font-medium hover:bg-slate-100"
+            className="rounded-md border border-border px-4 py-1.5 text-sm font-medium hover:bg-primary-light"
           >
             Back
           </button>
         </div>
-        {error ? <p className="text-sm text-red-600">{error}</p> : null}
+        {error ? <p className="text-sm text-danger">{error}</p> : null}
       </form>
     );
   }
@@ -159,12 +159,12 @@ export function NewRequestForm() {
   if (studentCandidates) {
     return (
       <div className="flex flex-col gap-3">
-        <p className="text-sm text-slate-600">Select the student this request is for:</p>
+        <p className="text-sm text-ink-secondary">Select the student this request is for:</p>
         <ul className="flex flex-col gap-2">
           {studentCandidates.map((c) => (
             <li
               key={c.platform_student_id}
-              className="flex items-center justify-between rounded-md border border-slate-200 p-3 text-sm"
+              className="flex items-center justify-between rounded-md border border-border p-3 text-sm"
             >
               <span>
                 {c.name} ({c.dob}) — <span className="font-medium">{c.confidence}</span> confidence
@@ -172,7 +172,7 @@ export function NewRequestForm() {
               <button
                 type="button"
                 onClick={() => setStudent(c)}
-                className="rounded-md border border-slate-300 px-3 py-1 text-xs font-medium hover:bg-slate-100"
+                className="rounded-md border border-border px-3 py-1 text-xs font-medium hover:bg-primary-light"
               >
                 Select
               </button>
@@ -182,11 +182,11 @@ export function NewRequestForm() {
         <button
           type="button"
           onClick={() => setStudentCandidates(null)}
-          className="self-start text-sm text-slate-500 hover:text-slate-900"
+          className="self-start text-sm text-ink-secondary hover:text-ink"
         >
           Search again
         </button>
-        {error ? <p className="text-sm text-red-600">{error}</p> : null}
+        {error ? <p className="text-sm text-danger">{error}</p> : null}
       </div>
     );
   }
@@ -194,21 +194,21 @@ export function NewRequestForm() {
   return (
     <form action={handleStudentSearch} className="flex flex-wrap items-end gap-2">
       <div className="flex flex-col gap-1">
-        <label className="text-xs text-slate-500">Student name</label>
-        <input name="name" required className="rounded-md border border-slate-300 px-2 py-1.5 text-sm" />
+        <label className="text-xs text-ink-secondary">Student name</label>
+        <input name="name" required className="rounded-md border border-border px-2 py-1.5 text-sm" />
       </div>
       <div className="flex flex-col gap-1">
-        <label className="text-xs text-slate-500">Date of birth</label>
-        <input name="dob" type="date" required className="rounded-md border border-slate-300 px-2 py-1.5 text-sm" />
+        <label className="text-xs text-ink-secondary">Date of birth</label>
+        <input name="dob" type="date" required className="rounded-md border border-border px-2 py-1.5 text-sm" />
       </div>
       <button
         type="submit"
         disabled={isPending}
-        className="rounded-md bg-slate-900 px-4 py-1.5 text-sm font-medium text-white hover:bg-slate-700 disabled:opacity-60"
+        className="rounded-md bg-primary px-4 py-1.5 text-sm font-medium text-white hover:bg-primary-dark disabled:opacity-60"
       >
         Find student
       </button>
-      {error ? <p className="w-full text-sm text-red-600">{error}</p> : null}
+      {error ? <p className="w-full text-sm text-danger">{error}</p> : null}
     </form>
   );
 }

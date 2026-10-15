@@ -1,5 +1,6 @@
 import { createServerClient, getSessionClaims } from "@schoolos/db";
 import { redirect } from "next/navigation";
+import { Button } from "@schoolos/ui";
 import { AttendanceForm } from "./attendance-form";
 
 export default async function TeacherAttendancePage({
@@ -52,16 +53,16 @@ export default async function TeacherAttendancePage({
     <div className="flex flex-col gap-6">
       <div>
         <h1 className="text-2xl font-semibold">Attendance</h1>
-        <p className="mt-1 text-sm text-slate-600">Editable same-day only; locked after midnight.</p>
+        <p className="mt-1 text-sm text-ink-secondary">Editable same-day only; locked after midnight.</p>
       </div>
 
       <form method="get" className="flex items-end gap-2">
         <div className="flex flex-col gap-1">
-          <label className="text-xs text-slate-500">Class</label>
+          <label className="text-xs text-ink-secondary">Class</label>
           <select
             name="classId"
             defaultValue={classId ?? ""}
-            className="rounded-md border border-slate-300 px-2 py-1.5 text-sm"
+            className="rounded-sm border border-border px-2 py-1.5 text-sm"
           >
             <option value="">—</option>
             {Array.from(classes, ([id, name]) => (
@@ -71,12 +72,9 @@ export default async function TeacherAttendancePage({
             ))}
           </select>
         </div>
-        <button
-          type="submit"
-          className="rounded-md border border-slate-300 px-4 py-1.5 text-sm font-medium hover:bg-slate-100"
-        >
+        <Button type="submit" variant="secondary">
           Load class
-        </button>
+        </Button>
       </form>
 
       {classId && classes.has(classId) ? (

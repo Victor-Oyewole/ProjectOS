@@ -29,13 +29,13 @@ export default async function TeacherDashboardPage() {
           {(classAssignments ?? []).map((ca) => (
             <li
               key={ca.assignment_id}
-              className="rounded-md border border-slate-200 p-3 text-sm"
+              className="rounded-md border border-border p-3 text-sm"
             >
               {ca.Class?.name} — {ca.Subject?.name}
             </li>
           ))}
           {(classAssignments ?? []).length === 0 ? (
-            <li className="text-sm text-slate-500">
+            <li className="text-sm text-ink-secondary">
               No classes assigned yet -- ask your school admin to set this up.
             </li>
           ) : null}
@@ -47,19 +47,19 @@ export default async function TeacherDashboardPage() {
         <div className="flex flex-wrap gap-3">
           <Link
             href="/teacher/assignments"
-            className="rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700"
+            className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary-dark"
           >
             New assignment
           </Link>
           <Link
             href="/teacher/attendance"
-            className="rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700"
+            className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary-dark"
           >
             Take attendance
           </Link>
           <Link
             href="/teacher/scores"
-            className="rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700"
+            className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary-dark"
           >
             Enter scores
           </Link>

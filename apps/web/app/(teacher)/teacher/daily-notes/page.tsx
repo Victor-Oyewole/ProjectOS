@@ -41,7 +41,7 @@ export default async function TeacherDailyNotesPage() {
     <div className="flex flex-col gap-6">
       <div>
         <h1 className="text-2xl font-semibold">Daily notes</h1>
-        <p className="mt-1 text-sm text-slate-600">
+        <p className="mt-1 text-sm text-ink-secondary">
           One-way notes to a family about a specific student. Sent notes can&rsquo;t be edited --
           send a new note to correct one.
         </p>
@@ -56,17 +56,17 @@ export default async function TeacherDailyNotesPage() {
         <h2 className="text-lg font-medium">Sent notes</h2>
         <ul className="flex flex-col gap-2">
           {(notes ?? []).map((n) => (
-            <li key={n.note_id} className="rounded-md border border-slate-200 p-3 text-sm">
+            <li key={n.note_id} className="rounded-md border border-border p-3 text-sm">
               <div className="flex items-center justify-between">
                 <span className="font-medium">{n.SchoolEnrollment?.PlatformStudent?.name}</span>
-                <span className="text-xs text-slate-500">
+                <span className="text-xs text-ink-secondary">
                   {n.category} — {n.date}
                 </span>
               </div>
-              <p className="mt-1 text-slate-700">{n.note_text}</p>
+              <p className="mt-1 text-ink">{n.note_text}</p>
             </li>
           ))}
-          {(notes ?? []).length === 0 ? <li className="text-sm text-slate-500">No notes sent yet.</li> : null}
+          {(notes ?? []).length === 0 ? <li className="text-sm text-ink-secondary">No notes sent yet.</li> : null}
         </ul>
       </section>
     </div>

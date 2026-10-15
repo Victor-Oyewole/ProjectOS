@@ -38,7 +38,7 @@ export function ScoreGrid({
   }
 
   if (students.length === 0) {
-    return <p className="text-sm text-slate-500">No students enrolled in this class.</p>;
+    return <p className="text-sm text-ink-secondary">No students enrolled in this class.</p>;
   }
 
   return (
@@ -46,7 +46,7 @@ export function ScoreGrid({
       <div className="overflow-x-auto">
         <table className="w-full text-left text-sm">
           <thead>
-            <tr className="border-b border-slate-200 text-xs text-slate-500">
+            <tr className="border-b border-border text-xs text-ink-secondary">
               <th className="py-1 pr-2">Student</th>
               {assessments.map((a) => (
                 <th key={a.assessmentId} className="py-1 pr-2">
@@ -67,7 +67,7 @@ export function ScoreGrid({
                         type="number"
                         value={grid[key] ?? ""}
                         onChange={(e) => setGrid((prev) => ({ ...prev, [key]: e.target.value }))}
-                        className="w-20 rounded-md border border-slate-300 px-2 py-1 text-sm"
+                        className="w-20 rounded-md border border-border px-2 py-1 text-sm"
                       />
                     </td>
                   );
@@ -81,12 +81,12 @@ export function ScoreGrid({
         type="button"
         disabled={isPending}
         onClick={handleSave}
-        className="self-start rounded-md bg-slate-900 px-4 py-1.5 text-sm font-medium text-white hover:bg-slate-700 disabled:opacity-60"
+        className="self-start rounded-md bg-primary px-4 py-1.5 text-sm font-medium text-white hover:bg-primary-dark disabled:opacity-60"
       >
         Save scores
       </button>
-      {error ? <p className="text-sm text-red-600">{error}</p> : null}
-      {done ? <p className="text-sm text-green-700">Scores saved.</p> : null}
+      {error ? <p className="text-sm text-danger">{error}</p> : null}
+      {done ? <p className="text-sm text-success">Scores saved.</p> : null}
     </div>
   );
 }

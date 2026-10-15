@@ -44,7 +44,7 @@ export default async function ActivationsPage() {
     <main className="mx-auto flex min-h-screen max-w-3xl flex-col gap-6 px-4 py-12">
       <div>
         <h1 className="text-2xl font-semibold">Pending activations</h1>
-        <p className="mt-1 text-sm text-slate-600">
+        <p className="mt-1 text-sm text-ink-secondary">
           Codes expire 7 days after generation. Copy a link and send it to the person however
           works best.
         </p>
@@ -53,11 +53,11 @@ export default async function ActivationsPage() {
         {rows.map((row) => (
           <li
             key={row.activation_code_id}
-            className="flex items-center justify-between rounded-md border border-slate-200 p-3 text-sm"
+            className="flex items-center justify-between rounded-md border border-border p-3 text-sm"
           >
             <span>
               {row.name}{" "}
-              <span className="text-slate-500">
+              <span className="text-ink-secondary">
                 ({row.target_entity === "Person" ? "family" : row.target_entity.toLowerCase()})
               </span>
             </span>
@@ -65,7 +65,7 @@ export default async function ActivationsPage() {
           </li>
         ))}
         {rows.length === 0 ? (
-          <li className="text-sm text-slate-500">No pending activations.</li>
+          <li className="text-sm text-ink-secondary">No pending activations.</li>
         ) : null}
       </ul>
     </main>

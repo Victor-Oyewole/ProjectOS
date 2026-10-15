@@ -70,7 +70,7 @@ export function StudentForm({ classes }: { classes: { class_id: string; name: st
 
   if (candidates) {
     return (
-      <div className="flex flex-col gap-3 rounded-md border border-amber-300 bg-amber-50 p-4">
+      <div className="flex flex-col gap-3 rounded-md border border-warning/30 bg-warning/10 p-4">
         <p className="text-sm font-medium">
           This looks like it might already be an existing student. Confirm or add as new.
         </p>
@@ -84,7 +84,7 @@ export function StudentForm({ classes }: { classes: { class_id: string; name: st
                 type="button"
                 disabled={isPending}
                 onClick={() => handleConfirmMatch(c.platform_student_id)}
-                className="rounded-md border border-slate-300 px-3 py-1 text-xs font-medium hover:bg-slate-100 disabled:opacity-60"
+                className="rounded-md border border-border px-3 py-1 text-xs font-medium hover:bg-primary-light disabled:opacity-60"
               >
                 Same student
               </button>
@@ -95,11 +95,11 @@ export function StudentForm({ classes }: { classes: { class_id: string; name: st
           type="button"
           disabled={isPending}
           onClick={handleCreateAsNew}
-          className="self-start rounded-md bg-slate-900 px-3 py-1.5 text-xs font-medium text-white hover:bg-slate-700 disabled:opacity-60"
+          className="self-start rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-white hover:bg-primary-dark disabled:opacity-60"
         >
           Different student — add as new
         </button>
-        {error ? <p className="text-sm text-red-600">{error}</p> : null}
+        {error ? <p className="text-sm text-danger">{error}</p> : null}
       </div>
     );
   }
@@ -107,21 +107,21 @@ export function StudentForm({ classes }: { classes: { class_id: string; name: st
   return (
     <form action={handleSearch} className="flex flex-wrap items-end gap-2">
       <div className="flex flex-col gap-1">
-        <label className="text-xs text-slate-500">Name</label>
-        <input name="name" required className="rounded-md border border-slate-300 px-2 py-1.5 text-sm" />
+        <label className="text-xs text-ink-secondary">Name</label>
+        <input name="name" required className="rounded-md border border-border px-2 py-1.5 text-sm" />
       </div>
       <div className="flex flex-col gap-1">
-        <label className="text-xs text-slate-500">Date of birth</label>
+        <label className="text-xs text-ink-secondary">Date of birth</label>
         <input
           name="dob"
           type="date"
           required
-          className="rounded-md border border-slate-300 px-2 py-1.5 text-sm"
+          className="rounded-md border border-border px-2 py-1.5 text-sm"
         />
       </div>
       <div className="flex flex-col gap-1">
-        <label className="text-xs text-slate-500">Class (optional)</label>
-        <select name="classId" className="rounded-md border border-slate-300 px-2 py-1.5 text-sm">
+        <label className="text-xs text-ink-secondary">Class (optional)</label>
+        <select name="classId" className="rounded-md border border-border px-2 py-1.5 text-sm">
           <option value="">—</option>
           {classes.map((c) => (
             <option key={c.class_id} value={c.class_id}>
@@ -133,11 +133,11 @@ export function StudentForm({ classes }: { classes: { class_id: string; name: st
       <button
         type="submit"
         disabled={isPending}
-        className="rounded-md bg-slate-900 px-4 py-1.5 text-sm font-medium text-white hover:bg-slate-700 disabled:opacity-60"
+        className="rounded-md bg-primary px-4 py-1.5 text-sm font-medium text-white hover:bg-primary-dark disabled:opacity-60"
       >
         Add student
       </button>
-      {error ? <p className="w-full text-sm text-red-600">{error}</p> : null}
+      {error ? <p className="w-full text-sm text-danger">{error}</p> : null}
     </form>
   );
 }

@@ -21,12 +21,12 @@ export function RetractButton({ assignmentId }: { assignmentId: string }) {
     return (
       <div className="flex flex-col items-end gap-1">
         <div className="flex items-center gap-2">
-          <span className="text-xs text-slate-600">Retract this assignment?</span>
+          <span className="text-xs text-ink-secondary">Retract this assignment?</span>
           <button
             type="button"
             disabled={isPending}
             onClick={handleRetract}
-            className="rounded-md border border-red-300 px-2 py-1 text-xs font-medium text-red-700 hover:bg-red-50 disabled:opacity-60"
+            className="rounded-md border border-danger/30 px-2 py-1 text-xs font-medium text-danger hover:bg-danger/10 disabled:opacity-60"
           >
             Confirm retract
           </button>
@@ -34,12 +34,12 @@ export function RetractButton({ assignmentId }: { assignmentId: string }) {
             type="button"
             disabled={isPending}
             onClick={() => setConfirming(false)}
-            className="rounded-md border border-slate-300 px-2 py-1 text-xs font-medium hover:bg-slate-100"
+            className="rounded-md border border-border px-2 py-1 text-xs font-medium hover:bg-primary-light"
           >
             Cancel
           </button>
         </div>
-        {error ? <p className="text-xs text-red-600">{error}</p> : null}
+        {error ? <p className="text-xs text-danger">{error}</p> : null}
       </div>
     );
   }
@@ -48,7 +48,7 @@ export function RetractButton({ assignmentId }: { assignmentId: string }) {
     <button
       type="button"
       onClick={() => setConfirming(true)}
-      className="rounded-md border border-slate-300 px-2 py-1 text-xs font-medium hover:bg-slate-100"
+      className="rounded-md border border-border px-2 py-1 text-xs font-medium hover:bg-primary-light"
     >
       Retract
     </button>

@@ -20,20 +20,20 @@ export default async function TeacherLayout({ children }: { children: React.Reac
 
   return (
     <main className="mx-auto flex min-h-screen max-w-3xl flex-col gap-6 px-4 py-12">
-      <nav className="flex gap-4 border-b border-slate-200 text-sm font-medium">
-        <Link href="/teacher" className="px-1 pb-3 hover:text-slate-900">
+      <nav className="flex gap-4 border-b border-border text-sm font-medium">
+        <Link href="/teacher" className="px-1 pb-3 hover:text-ink">
           Dashboard
         </Link>
-        <Link href="/teacher/assignments" className="px-1 pb-3 hover:text-slate-900">
+        <Link href="/teacher/assignments" className="px-1 pb-3 hover:text-ink">
           Assignments
         </Link>
-        <Link href="/teacher/attendance" className="px-1 pb-3 hover:text-slate-900">
+        <Link href="/teacher/attendance" className="px-1 pb-3 hover:text-ink">
           Attendance
         </Link>
-        <Link href="/teacher/scores" className="px-1 pb-3 hover:text-slate-900">
+        <Link href="/teacher/scores" className="px-1 pb-3 hover:text-ink">
           Scores
         </Link>
-        <Link href="/teacher/daily-notes" className="px-1 pb-3 hover:text-slate-900">
+        <Link href="/teacher/daily-notes" className="px-1 pb-3 hover:text-ink">
           Daily notes
         </Link>
       </nav>

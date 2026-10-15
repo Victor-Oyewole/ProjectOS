@@ -70,18 +70,18 @@ export default async function TeacherScoresPage({
     <div className="flex flex-col gap-6">
       <div>
         <h1 className="text-2xl font-semibold">Scores</h1>
-        <p className="mt-1 text-sm text-slate-600">
+        <p className="mt-1 text-sm text-ink-secondary">
           Assessments (test/exam names, weighting) are set up by your school admin.
         </p>
       </div>
 
       <form method="get" className="flex items-end gap-2">
         <div className="flex flex-col gap-1">
-          <label className="text-xs text-slate-500">Class / Subject</label>
+          <label className="text-xs text-ink-secondary">Class / Subject</label>
           <select
             name="pair"
             defaultValue={pair ?? ""}
-            className="rounded-md border border-slate-300 px-2 py-1.5 text-sm"
+            className="rounded-md border border-border px-2 py-1.5 text-sm"
           >
             <option value="">—</option>
             {classSubjects.map((cs) => (
@@ -93,7 +93,7 @@ export default async function TeacherScoresPage({
         </div>
         <button
           type="submit"
-          className="rounded-md border border-slate-300 px-4 py-1.5 text-sm font-medium hover:bg-slate-100"
+          className="rounded-md border border-border px-4 py-1.5 text-sm font-medium hover:bg-primary-light"
         >
           Load
         </button>
@@ -101,7 +101,7 @@ export default async function TeacherScoresPage({
 
       {selected ? (
         assessments.length === 0 ? (
-          <p className="text-sm text-slate-500">
+          <p className="text-sm text-ink-secondary">
             No assessments set up yet for {selected.className} — {selected.subjectName}. Ask your school
             admin to add one.
           </p>

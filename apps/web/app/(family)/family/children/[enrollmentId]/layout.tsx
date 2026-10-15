@@ -41,23 +41,23 @@ export default async function ChildLayout({
   return (
     <div className="flex flex-col gap-6">
       <h1 className="text-2xl font-semibold">{enrollment.PlatformStudent?.name}</h1>
-      <nav className="flex gap-4 border-b border-slate-200 text-sm font-medium">
-        <Link href={base} className="px-1 pb-3 hover:text-slate-900">
+      <nav className="flex gap-4 border-b border-border text-sm font-medium">
+        <Link href={base} className="px-1 pb-3 hover:text-ink">
           Overview
         </Link>
-        <Link href={`${base}/assignments`} className="px-1 pb-3 hover:text-slate-900">
+        <Link href={`${base}/assignments`} className="px-1 pb-3 hover:text-ink">
           Assignments
         </Link>
-        <Link href={`${base}/attendance`} className="px-1 pb-3 hover:text-slate-900">
+        <Link href={`${base}/attendance`} className="px-1 pb-3 hover:text-ink">
           Attendance
         </Link>
-        <Link href={`${base}/results`} className="px-1 pb-3 hover:text-slate-900">
+        <Link href={`${base}/results`} className="px-1 pb-3 hover:text-ink">
           Results
         </Link>
-        <Link href={`${base}/daily-notes`} className="px-1 pb-3 hover:text-slate-900">
+        <Link href={`${base}/daily-notes`} className="px-1 pb-3 hover:text-ink">
           Daily notes
         </Link>
-        <Link href={`${base}/fees`} className="px-1 pb-3 hover:text-slate-900">
+        <Link href={`${base}/fees`} className="px-1 pb-3 hover:text-ink">
           Fees
         </Link>
       </nav>

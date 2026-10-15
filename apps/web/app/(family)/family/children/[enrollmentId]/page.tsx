@@ -46,15 +46,15 @@ export default async function ChildOverviewPage({
   return (
     <div className="flex flex-col gap-6">
       <div className="flex items-center gap-3">
-        <p className="text-sm text-slate-600">Current class: {membership?.Class?.name ?? "—"}</p>
+        <p className="text-sm text-ink-secondary">Current class: {membership?.Class?.name ?? "—"}</p>
         {latestFee ? (
           <span
             className={`rounded-full px-2 py-0.5 text-xs font-medium ${
               latestFee.status === "Paid"
-                ? "bg-green-100 text-green-800"
+                ? "bg-success/10 text-success"
                 : latestFee.status === "Partial"
-                  ? "bg-amber-100 text-amber-800"
-                  : "bg-red-100 text-red-800"
+                  ? "bg-warning/10 text-warning"
+                  : "bg-danger/10 text-danger"
             }`}
           >
             Fees ({latestFee.Term?.name}): {latestFee.status}
@@ -64,25 +64,25 @@ export default async function ChildOverviewPage({
 
       <section>
         <h2 className="text-lg font-medium">Latest assignments</h2>
-        <ul className="mt-2 flex flex-col gap-1 text-sm text-slate-700">
+        <ul className="mt-2 flex flex-col gap-1 text-sm text-ink">
           {assignments.map((a, i) => (
             <li key={i}>
               {a.title} ({a.Class?.name} — {a.Subject?.name})
             </li>
           ))}
-          {assignments.length === 0 ? <li className="text-slate-500">None yet.</li> : null}
+          {assignments.length === 0 ? <li className="text-ink-secondary">None yet.</li> : null}
         </ul>
       </section>
 
       <section>
         <h2 className="text-lg font-medium">Recent attendance</h2>
-        <ul className="mt-2 flex flex-col gap-1 text-sm text-slate-700">
+        <ul className="mt-2 flex flex-col gap-1 text-sm text-ink">
           {(recentAttendance ?? []).map((a, i) => (
             <li key={i}>
               {a.date}: {a.status}
             </li>
           ))}
-          {(recentAttendance ?? []).length === 0 ? <li className="text-slate-500">None recorded yet.</li> : null}
+          {(recentAttendance ?? []).length === 0 ? <li className="text-ink-secondary">None recorded yet.</li> : null}
         </ul>
       </section>
     </div>

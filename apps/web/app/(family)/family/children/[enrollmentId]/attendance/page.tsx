@@ -17,12 +17,12 @@ export default async function ChildAttendancePage({
   return (
     <ul className="flex flex-col gap-2">
       {(rows ?? []).map((r, i) => (
-        <li key={i} className="flex items-center justify-between rounded-md border border-slate-200 p-3 text-sm">
+        <li key={i} className="flex items-center justify-between rounded-md border border-border p-3 text-sm">
           <span>{r.date}</span>
-          <span className="text-slate-500">{r.status}</span>
+          <span className="text-ink-secondary">{r.status}</span>
         </li>
       ))}
-      {(rows ?? []).length === 0 ? <li className="text-sm text-slate-500">No attendance recorded yet.</li> : null}
+      {(rows ?? []).length === 0 ? <li className="text-sm text-ink-secondary">No attendance recorded yet.</li> : null}
     </ul>
   );
 }

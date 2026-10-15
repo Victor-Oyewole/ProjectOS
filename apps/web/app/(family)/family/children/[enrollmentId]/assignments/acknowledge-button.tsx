@@ -17,7 +17,7 @@ export function AcknowledgeButton({ assignmentId, enrollmentId }: { assignmentId
     });
   }
 
-  if (done) return <p className="text-sm text-green-700">Acknowledged.</p>;
+  if (done) return <p className="text-sm text-success">Acknowledged.</p>;
 
   return (
     <div className="flex flex-col gap-1">
@@ -25,11 +25,11 @@ export function AcknowledgeButton({ assignmentId, enrollmentId }: { assignmentId
         type="button"
         disabled={isPending}
         onClick={handleClick}
-        className="rounded-md bg-slate-900 px-3 py-1.5 text-xs font-medium text-white hover:bg-slate-700 disabled:opacity-60"
+        className="rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-white hover:bg-primary-dark disabled:opacity-60"
       >
         Acknowledge
       </button>
-      {error ? <p className="text-xs text-red-600">{error}</p> : null}
+      {error ? <p className="text-xs text-danger">{error}</p> : null}
     </div>
   );
 }

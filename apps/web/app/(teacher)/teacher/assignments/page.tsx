@@ -35,7 +35,7 @@ export default async function TeacherAssignmentsPage() {
     <div className="flex flex-col gap-6">
       <div>
         <h1 className="text-2xl font-semibold">Assignments</h1>
-        <p className="mt-1 text-sm text-slate-600">
+        <p className="mt-1 text-sm text-ink-secondary">
           Scheduling one notifies every enrolled family automatically.
         </p>
       </div>
@@ -48,20 +48,20 @@ export default async function TeacherAssignmentsPage() {
           {(assignments ?? []).map((a) => (
             <li
               key={a.assignment_id}
-              className="flex items-center justify-between rounded-md border border-slate-200 p-3 text-sm"
+              className="flex items-center justify-between rounded-md border border-border p-3 text-sm"
             >
               <span>
                 {a.title}{" "}
-                <span className="text-slate-500">
+                <span className="text-ink-secondary">
                   ({a.Class?.name} — {a.Subject?.name})
                 </span>
-                <span className="ml-2 text-xs text-slate-500">{a.status}</span>
+                <span className="ml-2 text-xs text-ink-secondary">{a.status}</span>
               </span>
               {a.status === "Published" ? <RetractButton assignmentId={a.assignment_id} /> : null}
             </li>
           ))}
           {(assignments ?? []).length === 0 ? (
-            <li className="text-sm text-slate-500">No assignments yet.</li>
+            <li className="text-sm text-ink-secondary">No assignments yet.</li>
           ) : null}
         </ul>
       </section>
