@@ -1,13 +1,14 @@
 import { createServerClient, getSessionClaims } from "@schoolos/db";
 import { redirect } from "next/navigation";
 import { ScoreGrid } from "./score-grid";
+import { MilestoneGrid } from "./milestone-grid";
 
 export default async function TeacherScoresPage({
   searchParams,
 }: {
-  searchParams: Promise<{ pair?: string }>;
+  searchParams: Promise<{ pair?: string; termId?: string }>;
 }) {
-  const { pair } = await searchParams;
+  const { pair, termId } = await searchParams;
   const [classId, subjectId] = (pair ?? "").split(":");
   const supabase = await createServerClient();
   const claims = await getSessionClaims(supabase);
@@ -15,10 +16,15 @@ export default async function TeacherScoresPage({
     redirect("/login");
   }
 
-  const { data: classAssignments } = await supabase
-    .from("TeacherClassAssignment")
-    .select("class_id, subject_id, Class(name), Subject(name)")
-    .eq("teacher_id", claims.teacher_id);
+  const [{ data: classAssignments }, { data: school }] = await Promise.all([
+    supabase
+      .from("TeacherClassAssignment")
+      .select("class_id, subject_id, Class(name), Subject(name)")
+      .eq("teacher_id", claims.teacher_id),
+    supabase.from("School").select("assessment_model").single(),
+  ]);
+
+  const isNarrative = school?.assessment_model === "narrative_milestone";
 
   const classSubjects = (classAssignments ?? [])
     .filter((ca) => ca.Class && ca.Subject)
@@ -34,8 +40,43 @@ export default async function TeacherScoresPage({
   let assessments: { assessmentId: string; name: string }[] = [];
   let students: { enrollmentId: string; name: string }[] = [];
   let scores: { assessmentId: string; enrollmentId: string; value: number }[] = [];
+  let terms: { id: string; name: string }[] = [];
+  let milestoneLevels: string[] = [];
+  let milestoneEntries: { enrollmentId: string; milestoneLevel: string; narrativeNote: string | null }[] = [];
 
-  if (selected) {
+  if (selected && isNarrative) {
+    const [{ data: sessions }, { data: milestoneScale }, { data: memberships }] = await Promise.all([
+      supabase
+        .from("AcademicSession")
+        .select("name, Term(term_id, name)")
+        .order("start_date", { ascending: false }),
+      supabase.from("MilestoneScale").select("levels").maybeSingle(),
+      supabase
+        .from("ClassMembership")
+        .select("enrollment_id, SchoolEnrollment(platform_student_id, PlatformStudent(name))")
+        .eq("class_id", classId!)
+        .is("end_date", null),
+    ]);
+
+    terms = (sessions ?? []).flatMap((s) => s.Term.map((t) => ({ id: t.term_id, name: `${s.name} — ${t.name}` })));
+    milestoneLevels = (Array.isArray(milestoneScale?.levels) ? milestoneScale.levels : []) as string[];
+    students = (memberships ?? [])
+      .filter((m) => m.SchoolEnrollment?.PlatformStudent)
+      .map((m) => ({ enrollmentId: m.enrollment_id, name: m.SchoolEnrollment!.PlatformStudent!.name }));
+
+    if (termId) {
+      const { data: rows } = await supabase
+        .from("MilestoneAssessment")
+        .select("enrollment_id, milestone_level, narrative_note")
+        .eq("subject_id", subjectId!)
+        .eq("term_id", termId);
+      milestoneEntries = (rows ?? []).map((r) => ({
+        enrollmentId: r.enrollment_id,
+        milestoneLevel: r.milestone_level,
+        narrativeNote: r.narrative_note,
+      }));
+    }
+  } else if (selected) {
     const [{ data: assessmentRows }, { data: memberships }] = await Promise.all([
       supabase.from("Assessment").select("assessment_id, name").eq("class_id", classId!).eq("subject_id", subjectId!),
       supabase
@@ -69,9 +110,11 @@ export default async function TeacherScoresPage({
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h1 className="text-2xl font-semibold">Scores</h1>
+        <h1 className="text-2xl font-semibold">{isNarrative ? "Developmental assessment" : "Scores"}</h1>
         <p className="mt-1 text-sm text-ink-secondary">
-          Assessments (test/exam names, weighting) are set up by your school admin.
+          {isNarrative
+            ? "Milestone levels are set up by your school admin."
+            : "Assessments (test/exam names, weighting) are set up by your school admin."}
         </p>
       </div>
 
@@ -91,6 +134,19 @@ export default async function TeacherScoresPage({
             ))}
           </select>
         </div>
+        {isNarrative ? (
+          <div className="flex flex-col gap-1">
+            <label className="text-xs text-ink-secondary">Term</label>
+            <select name="termId" defaultValue={termId ?? ""} className="rounded-md border border-border px-2 py-1.5 text-sm">
+              <option value="">—</option>
+              {terms.map((t) => (
+                <option key={t.id} value={t.id}>
+                  {t.name}
+                </option>
+              ))}
+            </select>
+          </div>
+        ) : null}
         <button
           type="submit"
           className="rounded-sm border border-border px-4 py-1.5 text-sm font-medium hover:bg-primary-light"
@@ -99,7 +155,23 @@ export default async function TeacherScoresPage({
         </button>
       </form>
 
-      {selected ? (
+      {selected && isNarrative ? (
+        !termId ? (
+          <p className="text-sm text-ink-secondary">Select a term to enter milestone assessments.</p>
+        ) : milestoneLevels.length === 0 ? (
+          <p className="text-sm text-ink-secondary">
+            No milestone levels set up yet for {selected.subjectName}. Ask your school admin to add one.
+          </p>
+        ) : (
+          <MilestoneGrid
+            subjectId={subjectId!}
+            termId={termId}
+            levels={milestoneLevels}
+            students={students}
+            entries={milestoneEntries}
+          />
+        )
+      ) : selected ? (
         assessments.length === 0 ? (
           <p className="text-sm text-ink-secondary">
             No assessments set up yet for {selected.className} — {selected.subjectName}. Ask your school

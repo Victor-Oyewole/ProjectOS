@@ -2,17 +2,206 @@
 
 import { useActionState } from "react";
 import {
+  addGradeBand,
+  addMilestoneLevel,
   assignTeacherToClass,
   createAcademicSession,
   createAssessment,
   createClass,
   createSubject,
   createTerm,
+  removeGradeBand,
+  removeMilestoneLevel,
+  setAssessmentWeight,
+  setSubjectCreditWeight,
+  updateAssessmentModel,
 } from "./actions";
 
 function ErrorText({ error }: { error?: string }) {
   if (!error) return null;
   return <p className="text-sm text-danger">{error}</p>;
+}
+
+export const ASSESSMENT_MODEL_LABELS: Record<string, string> = {
+  equal_weight: "Equal-weight average",
+  credit_weighted: "Credit-weighted average",
+  narrative_milestone: "Narrative / milestone-based",
+};
+
+export function AssessmentModelForm({ current }: { current: string }) {
+  const [state, formAction, isPending] = useActionState(
+    async (_prev: { error?: string } | null, formData: FormData) => updateAssessmentModel(formData),
+    null,
+  );
+  return (
+    <form action={formAction} className="flex flex-wrap items-end gap-2">
+      <div className="flex flex-col gap-1">
+        <label className="text-xs text-ink-secondary">Assessment model</label>
+        <select
+          name="assessmentModel"
+          defaultValue={current}
+          className="rounded-md border border-border px-2 py-1.5 text-sm"
+        >
+          {Object.entries(ASSESSMENT_MODEL_LABELS).map(([value, label]) => (
+            <option key={value} value={value}>
+              {label}
+            </option>
+          ))}
+        </select>
+      </div>
+      <button
+        type="submit"
+        disabled={isPending}
+        className="rounded-sm bg-primary px-4 py-1.5 text-sm font-medium text-white hover:bg-primary-dark disabled:opacity-60"
+      >
+        Save model
+      </button>
+      <ErrorText error={state?.error} />
+    </form>
+  );
+}
+
+export function AddGradeBandForm() {
+  const [state, formAction, isPending] = useActionState(
+    async (_prev: { error?: string } | null, formData: FormData) => addGradeBand(formData),
+    null,
+  );
+  return (
+    <form action={formAction} className="flex flex-wrap items-end gap-2">
+      <div className="flex flex-col gap-1">
+        <label className="text-xs text-ink-secondary">Min</label>
+        <input name="min" type="number" required className="w-20 rounded-md border border-border px-2 py-1.5 text-sm" />
+      </div>
+      <div className="flex flex-col gap-1">
+        <label className="text-xs text-ink-secondary">Max</label>
+        <input name="max" type="number" required className="w-20 rounded-md border border-border px-2 py-1.5 text-sm" />
+      </div>
+      <div className="flex flex-col gap-1">
+        <label className="text-xs text-ink-secondary">Grade</label>
+        <input name="grade" placeholder="A" required className="w-20 rounded-md border border-border px-2 py-1.5 text-sm" />
+      </div>
+      <div className="flex flex-col gap-1">
+        <label className="text-xs text-ink-secondary">Remark (optional)</label>
+        <input name="remark" placeholder="Excellent" className="rounded-md border border-border px-2 py-1.5 text-sm" />
+      </div>
+      <button
+        type="submit"
+        disabled={isPending}
+        className="rounded-sm border border-border px-3 py-1.5 text-sm font-medium hover:bg-primary-light disabled:opacity-60"
+      >
+        Add band
+      </button>
+      <ErrorText error={state?.error} />
+    </form>
+  );
+}
+
+export function RemoveGradeBandButton({ index }: { index: number }) {
+  const [state, formAction, isPending] = useActionState(
+    async (_prev: { error?: string } | null, formData: FormData) => removeGradeBand(formData),
+    null,
+  );
+  return (
+    <form action={formAction}>
+      <input type="hidden" name="index" value={index} />
+      <button type="submit" disabled={isPending} className="text-xs text-danger hover:underline disabled:opacity-60">
+        Remove
+      </button>
+      <ErrorText error={state?.error} />
+    </form>
+  );
+}
+
+export function AddMilestoneLevelForm() {
+  const [state, formAction, isPending] = useActionState(
+    async (_prev: { error?: string } | null, formData: FormData) => addMilestoneLevel(formData),
+    null,
+  );
+  return (
+    <form action={formAction} className="flex flex-wrap items-end gap-2">
+      <div className="flex flex-col gap-1">
+        <label className="text-xs text-ink-secondary">Level name</label>
+        <input
+          name="level"
+          placeholder="Emerging"
+          required
+          className="rounded-md border border-border px-2 py-1.5 text-sm"
+        />
+      </div>
+      <button
+        type="submit"
+        disabled={isPending}
+        className="rounded-sm border border-border px-3 py-1.5 text-sm font-medium hover:bg-primary-light disabled:opacity-60"
+      >
+        Add level
+      </button>
+      <ErrorText error={state?.error} />
+    </form>
+  );
+}
+
+export function RemoveMilestoneLevelButton({ index }: { index: number }) {
+  const [state, formAction, isPending] = useActionState(
+    async (_prev: { error?: string } | null, formData: FormData) => removeMilestoneLevel(formData),
+    null,
+  );
+  return (
+    <form action={formAction}>
+      <input type="hidden" name="index" value={index} />
+      <button type="submit" disabled={isPending} className="text-xs text-danger hover:underline disabled:opacity-60">
+        Remove
+      </button>
+      <ErrorText error={state?.error} />
+    </form>
+  );
+}
+
+export function SubjectCreditWeightForm({ subjectId, current }: { subjectId: string; current: number }) {
+  const [state, formAction, isPending] = useActionState(
+    async (_prev: { error?: string } | null, formData: FormData) => setSubjectCreditWeight(formData),
+    null,
+  );
+  return (
+    <form action={formAction} className="flex items-center gap-1">
+      <input type="hidden" name="subjectId" value={subjectId} />
+      <input
+        name="creditWeight"
+        type="number"
+        min={1}
+        defaultValue={current}
+        className="w-14 rounded-md border border-border px-1.5 py-0.5 text-xs"
+      />
+      <button type="submit" disabled={isPending} className="text-xs text-primary hover:underline disabled:opacity-60">
+        Save
+      </button>
+      <ErrorText error={state?.error} />
+    </form>
+  );
+}
+
+export function AssessmentWeightForm({ assessmentId, current }: { assessmentId: string; current: number }) {
+  const [state, formAction, isPending] = useActionState(
+    async (_prev: { error?: string } | null, formData: FormData) => setAssessmentWeight(formData),
+    null,
+  );
+  return (
+    <form action={formAction} className="flex items-center gap-1">
+      <input type="hidden" name="assessmentId" value={assessmentId} />
+      <input
+        name="weight"
+        type="number"
+        min={0}
+        max={100}
+        defaultValue={current}
+        className="w-14 rounded-md border border-border px-1.5 py-0.5 text-xs"
+      />
+      <span className="text-xs text-ink-secondary">%</span>
+      <button type="submit" disabled={isPending} className="text-xs text-primary hover:underline disabled:opacity-60">
+        Save
+      </button>
+      <ErrorText error={state?.error} />
+    </form>
+  );
 }
 
 export function NewSessionForm() {
@@ -136,7 +325,7 @@ export function NewClassForm() {
   );
 }
 
-export function NewSubjectForm() {
+export function NewSubjectForm({ showCreditWeight, label }: { showCreditWeight?: boolean; label?: string } = {}) {
   const [state, formAction, isPending] = useActionState(
     async (_prev: { error?: string } | null, formData: FormData) => createSubject(formData),
     null,
@@ -144,7 +333,7 @@ export function NewSubjectForm() {
   return (
     <form action={formAction} className="flex items-end gap-2">
       <div className="flex flex-col gap-1">
-        <label className="text-xs text-ink-secondary">Subject name</label>
+        <label className="text-xs text-ink-secondary">{label ?? "Subject name"}</label>
         <input
           name="name"
           placeholder="Mathematics"
@@ -152,12 +341,24 @@ export function NewSubjectForm() {
           className="rounded-md border border-border px-2 py-1.5 text-sm"
         />
       </div>
+      {showCreditWeight ? (
+        <div className="flex flex-col gap-1">
+          <label className="text-xs text-ink-secondary">Credit weight</label>
+          <input
+            name="creditWeight"
+            type="number"
+            min={1}
+            defaultValue={1}
+            className="w-20 rounded-md border border-border px-2 py-1.5 text-sm"
+          />
+        </div>
+      ) : null}
       <button
         type="submit"
         disabled={isPending}
         className="rounded-sm bg-primary px-4 py-1.5 text-sm font-medium text-white hover:bg-primary-dark disabled:opacity-60"
       >
-        Add subject
+        Add {label ? label.toLowerCase() : "subject"}
       </button>
       <ErrorText error={state?.error} />
     </form>
@@ -302,6 +503,17 @@ export function NewAssessmentForm({
           placeholder="Test 1"
           required
           className="rounded-md border border-border px-2 py-1.5 text-sm"
+        />
+      </div>
+      <div className="flex flex-col gap-1">
+        <label className="text-xs text-ink-secondary">Weight %</label>
+        <input
+          name="weight"
+          type="number"
+          min={0}
+          max={100}
+          placeholder="30"
+          className="w-20 rounded-md border border-border px-2 py-1.5 text-sm"
         />
       </div>
       <button

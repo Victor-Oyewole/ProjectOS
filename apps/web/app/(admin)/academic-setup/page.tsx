@@ -2,12 +2,20 @@ import { createServerClient, getSessionClaims } from "@schoolos/db";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import {
-  NewSessionForm,
-  NewTermForm,
-  NewClassForm,
-  NewSubjectForm,
+  AddGradeBandForm,
+  AddMilestoneLevelForm,
+  ASSESSMENT_MODEL_LABELS,
+  AssessmentModelForm,
+  AssessmentWeightForm,
   AssignTeacherForm,
   NewAssessmentForm,
+  NewClassForm,
+  NewSessionForm,
+  NewSubjectForm,
+  NewTermForm,
+  RemoveGradeBandButton,
+  RemoveMilestoneLevelButton,
+  SubjectCreditWeightForm,
 } from "./forms";
 
 // Doc 12 Step 2: Academic Setup -- "required before people can be added."
@@ -25,20 +33,42 @@ export default async function AcademicSetupPage() {
     redirect("/login");
   }
 
-  const [{ data: sessions }, { data: classes }, { data: subjects }, { data: teachers }, { data: teacherAssignments }, { data: assessments }] =
-    await Promise.all([
-      supabase
-        .from("AcademicSession")
-        .select("session_id, name, start_date, end_date, Term(term_id, name, start_date, end_date)")
-        .order("start_date", { ascending: false }),
-      supabase.from("Class").select("class_id, name").order("name"),
-      supabase.from("Subject").select("subject_id, name").order("name"),
-      supabase.from("Teacher").select("teacher_id, name").order("name"),
-      supabase
-        .from("TeacherClassAssignment")
-        .select("assignment_id, Teacher(name), Class(name), Subject(name), AcademicSession(name)"),
-      supabase.from("Assessment").select("assessment_id, name, Class(name), Subject(name), Term(name)"),
-    ]);
+  const [
+    { data: school },
+    { data: sessions },
+    { data: classes },
+    { data: subjects },
+    { data: teachers },
+    { data: teacherAssignments },
+    { data: assessments },
+    { data: gradeScale },
+    { data: milestoneScale },
+  ] = await Promise.all([
+    supabase.from("School").select("assessment_model").single(),
+    supabase
+      .from("AcademicSession")
+      .select("session_id, name, start_date, end_date, Term(term_id, name, start_date, end_date)")
+      .order("start_date", { ascending: false }),
+    supabase.from("Class").select("class_id, name").order("name"),
+    supabase.from("Subject").select("subject_id, name, credit_weight").order("name"),
+    supabase.from("Teacher").select("teacher_id, name").order("name"),
+    supabase
+      .from("TeacherClassAssignment")
+      .select("assignment_id, Teacher(name), Class(name), Subject(name), AcademicSession(name)"),
+    supabase.from("Assessment").select("assessment_id, name, weight, Class(name), Subject(name), Term(name)"),
+    supabase.from("GradeScale").select("bands").maybeSingle(),
+    supabase.from("MilestoneScale").select("levels").maybeSingle(),
+  ]);
+
+  const assessmentModel = school?.assessment_model ?? "equal_weight";
+  const isNarrative = assessmentModel === "narrative_milestone";
+  const gradeBands = (Array.isArray(gradeScale?.bands) ? gradeScale.bands : []) as {
+    min: number;
+    max: number;
+    grade: string;
+    remark?: string;
+  }[];
+  const milestoneLevels = (Array.isArray(milestoneScale?.levels) ? milestoneScale.levels : []) as string[];
 
   const terms = (sessions ?? []).flatMap((s) => s.Term.map((t) => ({ id: t.term_id, name: `${s.name} — ${t.name}` })));
 
@@ -103,21 +133,85 @@ export default async function AcademicSetupPage() {
       </section>
 
       <section className="flex flex-col gap-4">
-        <h2 className="text-lg font-medium">Subjects</h2>
-        <ul className="flex flex-wrap gap-2">
+        <h2 className="text-lg font-medium">Assessment model</h2>
+        <p className="text-sm text-ink-secondary">
+          Chosen once during setup — equal-weight and credit-weighted both produce numeric grades;
+          narrative/milestone is for developmental-assessment schools (no scores, no grades).
+          Changing this is blocked once results have been computed.
+        </p>
+        <p className="text-sm">
+          Current: <span className="font-medium">{ASSESSMENT_MODEL_LABELS[assessmentModel] ?? assessmentModel}</span>
+        </p>
+        <AssessmentModelForm current={assessmentModel} />
+      </section>
+
+      {isNarrative ? (
+        <section className="flex flex-col gap-4">
+          <h2 className="text-lg font-medium">Milestone levels</h2>
+          <p className="text-sm text-ink-secondary">
+            Ordered developmental levels teachers will pick from (e.g. Emerging, Expected, Exceeding).
+          </p>
+          <ul className="flex flex-col gap-2">
+            {milestoneLevels.map((level, i) => (
+              <li key={`${level}-${i}`} className="flex items-center justify-between rounded-md border border-border p-3 text-sm">
+                <span>
+                  {i + 1}. {level}
+                </span>
+                <RemoveMilestoneLevelButton index={i} />
+              </li>
+            ))}
+            {milestoneLevels.length === 0 ? (
+              <li className="text-sm text-ink-secondary">No milestone levels yet.</li>
+            ) : null}
+          </ul>
+          <AddMilestoneLevelForm />
+        </section>
+      ) : (
+        <section className="flex flex-col gap-4">
+          <h2 className="text-lg font-medium">Grade scale</h2>
+          <p className="text-sm text-ink-secondary">
+            Score bands used to look up a letter grade when results are computed.
+          </p>
+          <ul className="flex flex-col gap-2">
+            {gradeBands.map((band, i) => (
+              <li key={i} className="flex items-center justify-between rounded-md border border-border p-3 text-sm">
+                <span>
+                  {band.min}–{band.max}: <span className="font-medium">{band.grade}</span>
+                  {band.remark ? <span className="text-ink-secondary"> ({band.remark})</span> : null}
+                </span>
+                <RemoveGradeBandButton index={i} />
+              </li>
+            ))}
+            {gradeBands.length === 0 ? <li className="text-sm text-ink-secondary">No grade bands yet.</li> : null}
+          </ul>
+          <AddGradeBandForm />
+        </section>
+      )}
+
+      <section className="flex flex-col gap-4">
+        <h2 className="text-lg font-medium">{isNarrative ? "Developmental areas" : "Subjects"}</h2>
+        <ul className="flex flex-col gap-2">
           {(subjects ?? []).map((subject) => (
             <li
               key={subject.subject_id}
-              className="rounded-full border border-border px-3 py-1 text-sm"
+              className="flex flex-wrap items-center gap-3 rounded-md border border-border px-3 py-2 text-sm"
             >
-              {subject.name}
+              <span>{subject.name}</span>
+              {assessmentModel === "credit_weighted" ? (
+                <SubjectCreditWeightForm subjectId={subject.subject_id} current={subject.credit_weight} />
+              ) : null}
             </li>
           ))}
           {(subjects ?? []).length === 0 ? (
-            <li className="text-sm text-ink-secondary">No subjects yet.</li>
+            <li className="text-sm text-ink-secondary">
+              No {isNarrative ? "developmental areas" : "subjects"} yet.
+            </li>
           ) : null}
         </ul>
-        <NewSubjectForm />
+        <NewSubjectForm
+          showCreditWeight={assessmentModel === "credit_weighted"}
+          label={isNarrative ? "Developmental area name" : undefined}
+        />
       </section>
 
       <section className="flex flex-col gap-4">
@@ -141,25 +235,37 @@ export default async function AcademicSetupPage() {
         />
       </section>
 
-      <section className="flex flex-col gap-4">
-        <h2 className="text-lg font-medium">Assessments</h2>
-        <ul className="flex flex-col gap-2">
-          {(assessments ?? []).map((a) => (
-            <li key={a.assessment_id} className="rounded-md border border-border p-3 text-sm">
-              {a.name} — {a.Class?.name} — {a.Subject?.name}{" "}
-              <span className="text-ink-secondary">({a.Term?.name})</span>
-            </li>
-          ))}
-          {(assessments ?? []).length === 0 ? (
-            <li className="text-sm text-ink-secondary">No assessments yet.</li>
-          ) : null}
-        </ul>
-        <NewAssessmentForm
-          classes={(classes ?? []).map((c) => ({ id: c.class_id, name: c.name }))}
-          subjects={(subjects ?? []).map((s) => ({ id: s.subject_id, name: s.name }))}
-          terms={terms}
-        />
-      </section>
+      {isNarrative ? null : (
+        <section className="flex flex-col gap-4">
+          <h2 className="text-lg font-medium">Assessments</h2>
+          <p className="text-sm text-ink-secondary">
+            Each subject&apos;s assessment weights (within a class/term) must sum to 100% before
+            results can be computed for that subject.
+          </p>
+          <ul className="flex flex-col gap-2">
+            {(assessments ?? []).map((a) => (
+              <li
+                key={a.assessment_id}
+                className="flex flex-wrap items-center justify-between gap-3 rounded-md border border-border p-3 text-sm"
+              >
+                <span>
+                  {a.name} — {a.Class?.name} — {a.Subject?.name}{" "}
+                  <span className="text-ink-secondary">({a.Term?.name})</span>
+                </span>
+                <AssessmentWeightForm assessmentId={a.assessment_id} current={a.weight} />
+              </li>
+            ))}
+            {(assessments ?? []).length === 0 ? (
+              <li className="text-sm text-ink-secondary">No assessments yet.</li>
+            ) : null}
+          </ul>
+          <NewAssessmentForm
+            classes={(classes ?? []).map((c) => ({ id: c.class_id, name: c.name }))}
+            subjects={(subjects ?? []).map((s) => ({ id: s.subject_id, name: s.name }))}
+            terms={terms}
+          />
+        </section>
+      )}
 
       <Link
         href="/admins"

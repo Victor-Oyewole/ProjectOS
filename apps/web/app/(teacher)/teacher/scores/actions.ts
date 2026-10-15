@@ -39,3 +39,46 @@ export async function saveScores(input: z.infer<typeof ScoresSchema>): Promise<{
   revalidatePath("/teacher/scores");
   return {};
 }
+
+// Doc 27 Section 4/7: the narrative/milestone-model counterpart of
+// saveScores -- MilestoneAssessment has a complete teacher RLS policy
+// scoped to the assigned class/subject (migration 046), same shape as
+// Score's, so this is also a plain upsert. One row per (enrollment,
+// subject, term) per its unique constraint.
+const MilestoneEntriesSchema = z.object({
+  subjectId: z.string().uuid(),
+  termId: z.string().uuid(),
+  entries: z.array(
+    z.object({
+      enrollmentId: z.string().uuid(),
+      milestoneLevel: z.string().trim().min(1),
+      narrativeNote: z.string().trim().optional(),
+    }),
+  ),
+});
+
+export async function saveMilestoneAssessments(
+  input: z.infer<typeof MilestoneEntriesSchema>,
+): Promise<{ error?: string }> {
+  const parsed = MilestoneEntriesSchema.safeParse(input);
+  if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "Invalid input" };
+  if (parsed.data.entries.length === 0) return { error: "No milestone entries to save." };
+
+  const { supabase, teacherId, schoolId } = await requireTeacher();
+  const { error } = await supabase.from("MilestoneAssessment").upsert(
+    parsed.data.entries.map((e) => ({
+      enrollment_id: e.enrollmentId,
+      subject_id: parsed.data.subjectId,
+      term_id: parsed.data.termId,
+      milestone_level: e.milestoneLevel,
+      narrative_note: e.narrativeNote || null,
+      entered_by: teacherId,
+      school_id: schoolId,
+    })),
+    { onConflict: "enrollment_id,subject_id,term_id" },
+  );
+  if (error) return { error: error.message };
+
+  revalidatePath("/teacher/scores");
+  return {};
+}

@@ -22,4 +22,6 @@ export {
   type AssignmentStatus,
   DeletionRequestStatusBadge,
   type DeletionRequestStatus,
+  ReportStatusBadge,
+  type ReportStatus,
 } from "./composite/StatusBadge";

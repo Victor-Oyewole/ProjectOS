@@ -16,6 +16,14 @@ create policy "milestonescale_all_platform_admin" on "MilestoneScale"
   using (is_platform_admin())
   with check (is_platform_admin());
 
+-- Added by migration 052: teacher had no select policy at all, so the
+-- score-entry screen couldn't read a narrative_milestone school's level
+-- labels to populate the picker (same class of gap as the Milestone 5
+-- cross-tenant visibility fixes, just same-tenant this time).
+create policy "milestonescale_select_teacher" on "MilestoneScale"
+  as permissive for select to authenticated
+  using (auth_app_role() = 'teacher' and school_id = auth_school_id());
+
 alter table "MilestoneAssessment" enable row level security;
 
 create policy "milestoneassessment_all_teacher_assigned" on "MilestoneAssessment"
@@ -72,6 +80,28 @@ create policy "termresult_all_platform_admin" on "TermResult"
   as permissive for all to authenticated
   using (is_platform_admin())
   with check (is_platform_admin());
+
+-- Added by migration 053: Doc 27 Section 7's report card screen shows a
+-- full subject/score/credit/grade table for Option 1/2, which is
+-- TermResult's shape -- without this, family could see the published
+-- aggregate TermReportCard but nothing behind it. Gated on the sibling
+-- TermReportCard being published (TermResult's own status never reaches
+-- 'published' -- only 'draft'/'finalized').
+create policy "termresult_select_family_published" on "TermResult"
+  as permissive for select to authenticated
+  using (
+    exists (
+      select 1 from "TermReportCard" trc
+      where trc.enrollment_id = "TermResult".enrollment_id
+        and trc.term_id = "TermResult".term_id
+        and trc.status = 'published'
+    )
+    and exists (
+      select 1 from "SchoolEnrollment" se
+      join "FamilyStudentRelationship" fsr on fsr.platform_student_id = se.platform_student_id
+      where se.enrollment_id = "TermResult".enrollment_id and fsr.membership_id = auth_membership_id()
+    )
+  );
 
 alter table "TermReportCard" enable row level security;
 

@@ -90,3 +90,15 @@ export function DeletionRequestStatusBadge({ status }: { status: DeletionRequest
     </Badge>
   );
 }
+
+export type ReportStatus = "draft" | "finalized" | "published";
+const REPORT_TONE: Record<ReportStatus, BadgeTone> = { draft: "neutral", finalized: "warning", published: "success" };
+
+export function ReportStatusBadge({ status }: { status: ReportStatus }) {
+  const tone = REPORT_TONE[status];
+  return (
+    <Badge tone={tone} icon={iconFor(tone)}>
+      {status}
+    </Badge>
+  );
+}
