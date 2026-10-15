@@ -9,9 +9,21 @@
 
 alter table "School" enable row level security;
 
+-- Third OR clause (TransferRequest) added by migration 051: without it,
+-- an admin viewing their own TransferRequest list can't see the OTHER
+-- party's school name via the embedded select, since that school isn't
+-- their own.
 create policy "school_select_own_or_platform_admin" on "School"
   as permissive for select to authenticated
-  using (school_id = auth_school_id() or is_platform_admin());
+  using (
+    school_id = auth_school_id()
+    or is_platform_admin()
+    or exists (
+      select 1 from "TransferRequest" tr
+      where (tr.from_school_id = "School".school_id or tr.to_school_id = "School".school_id)
+        and (tr.from_school_id = auth_school_id() or tr.to_school_id = auth_school_id())
+    )
+  );
 
 create policy "school_update_own_admin" on "School"
   as permissive for update to authenticated

@@ -38,11 +38,10 @@ interface AdminVisibleTable {
 // Every school-scoped table where the admin role has a SELECT policy that
 // isn't further narrowed below the admin's own school_id (i.e. the bulk of
 // the schema). Tables with a narrower or role-specific visibility story
-// (PlatformStudent, Person, DailyNote, Job/JobRecipientStatus,
+// (PlatformStudent, Person, DailyNote, Job/JobRecipientStatus, School,
 // TransferRequest/TransferPackage) get their own dedicated blocks further
 // down instead of being forced into this generic shape.
 const ADMIN_VISIBLE_TABLES: AdminVisibleTable[] = [
-  { table: "School", idColumn: "school_id", idOf: (s) => s.schoolId },
   { table: "Subscription", idColumn: "subscription_id", idOf: (s) => s.subscriptionId },
   { table: "AcademicSession", idColumn: "session_id", idOf: (s) => s.sessionId },
   { table: "Term", idColumn: "term_id", idOf: (s) => s.termId },
@@ -138,6 +137,29 @@ describe("tenant isolation: Job / JobRecipientStatus (platform_admin only, per 0
 
   it("no school-level role can see any JobRecipientStatus row", async () => {
     expect(await visibleCount(fx.schoolA.adminClient, "JobRecipientStatus", "id", fx.schoolA.jobRecipientStatusId)).toBe(0);
+  });
+});
+
+// School moved out of the generic loop by migration 051: a school's own
+// School row is no longer the only one it can see -- school_select_own_
+// or_platform_admin also grants visibility into the OTHER party's School
+// row when a TransferRequest links the two schools (needed so an admin's
+// /transfers list can show the other side's name at all). Still isolated
+// from a school with no such link.
+describe("tenant isolation: School (own row, or the other side of a TransferRequest)", () => {
+  it("admin sees their own School row", async () => {
+    expect(await visibleCount(fx.schoolA.adminClient, "School", "school_id", fx.schoolA.schoolId)).toBeGreaterThanOrEqual(1);
+    expect(await visibleCount(fx.schoolB.adminClient, "School", "school_id", fx.schoolB.schoolId)).toBeGreaterThanOrEqual(1);
+  });
+
+  it("both parties to a TransferRequest can see each other's School row", async () => {
+    expect(await visibleCount(fx.schoolA.adminClient, "School", "school_id", fx.schoolB.schoolId)).toBeGreaterThanOrEqual(1);
+    expect(await visibleCount(fx.schoolB.adminClient, "School", "school_id", fx.schoolA.schoolId)).toBeGreaterThanOrEqual(1);
+  });
+
+  it("an uninvolved third school cannot see either party's School row", async () => {
+    expect(await visibleCount(fx.schoolC.adminClient, "School", "school_id", fx.schoolA.schoolId)).toBe(0);
+    expect(await visibleCount(fx.schoolC.adminClient, "School", "school_id", fx.schoolB.schoolId)).toBe(0);
   });
 });
 
