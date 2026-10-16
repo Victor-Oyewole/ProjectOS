@@ -3,6 +3,7 @@
 import { requireTeacher } from "@schoolos/db";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
+import { logged } from "@/lib/action-log";
 
 // Doc 13 #3: "Student Grid: Student | Test 1 | Test 2 | Exam... Scores
 // recorded per enrollment, entered_by + entered_at logged." Score already
@@ -20,24 +21,26 @@ const ScoresSchema = z.object({
 });
 
 export async function saveScores(input: z.infer<typeof ScoresSchema>): Promise<{ error?: string }> {
-  const parsed = ScoresSchema.safeParse(input);
-  if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "Invalid input" };
-  if (parsed.data.entries.length === 0) return { error: "No scores to save." };
+  return logged("teacher.scores.saveScores", async () => {
+    const parsed = ScoresSchema.safeParse(input);
+    if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "Invalid input" };
+    if (parsed.data.entries.length === 0) return { error: "No scores to save." };
 
-  const { supabase, teacherId } = await requireTeacher();
-  const { error } = await supabase.from("Score").upsert(
-    parsed.data.entries.map((e) => ({
-      assessment_id: e.assessmentId,
-      enrollment_id: e.enrollmentId,
-      value: e.value,
-      entered_by: teacherId,
-    })),
-    { onConflict: "assessment_id,enrollment_id" },
-  );
-  if (error) return { error: error.message };
+    const { supabase, teacherId } = await requireTeacher();
+    const { error } = await supabase.from("Score").upsert(
+      parsed.data.entries.map((e) => ({
+        assessment_id: e.assessmentId,
+        enrollment_id: e.enrollmentId,
+        value: e.value,
+        entered_by: teacherId,
+      })),
+      { onConflict: "assessment_id,enrollment_id" },
+    );
+    if (error) return { error: error.message };
 
-  revalidatePath("/teacher/scores");
-  return {};
+    revalidatePath("/teacher/scores");
+    return {};
+  });
 }
 
 // Doc 27 Section 4/7: the narrative/milestone-model counterpart of
@@ -60,25 +63,27 @@ const MilestoneEntriesSchema = z.object({
 export async function saveMilestoneAssessments(
   input: z.infer<typeof MilestoneEntriesSchema>,
 ): Promise<{ error?: string }> {
-  const parsed = MilestoneEntriesSchema.safeParse(input);
-  if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "Invalid input" };
-  if (parsed.data.entries.length === 0) return { error: "No milestone entries to save." };
+  return logged("teacher.scores.saveMilestoneAssessments", async () => {
+    const parsed = MilestoneEntriesSchema.safeParse(input);
+    if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "Invalid input" };
+    if (parsed.data.entries.length === 0) return { error: "No milestone entries to save." };
 
-  const { supabase, teacherId, schoolId } = await requireTeacher();
-  const { error } = await supabase.from("MilestoneAssessment").upsert(
-    parsed.data.entries.map((e) => ({
-      enrollment_id: e.enrollmentId,
-      subject_id: parsed.data.subjectId,
-      term_id: parsed.data.termId,
-      milestone_level: e.milestoneLevel,
-      narrative_note: e.narrativeNote || null,
-      entered_by: teacherId,
-      school_id: schoolId,
-    })),
-    { onConflict: "enrollment_id,subject_id,term_id" },
-  );
-  if (error) return { error: error.message };
+    const { supabase, teacherId, schoolId } = await requireTeacher();
+    const { error } = await supabase.from("MilestoneAssessment").upsert(
+      parsed.data.entries.map((e) => ({
+        enrollment_id: e.enrollmentId,
+        subject_id: parsed.data.subjectId,
+        term_id: parsed.data.termId,
+        milestone_level: e.milestoneLevel,
+        narrative_note: e.narrativeNote || null,
+        entered_by: teacherId,
+        school_id: schoolId,
+      })),
+      { onConflict: "enrollment_id,subject_id,term_id" },
+    );
+    if (error) return { error: error.message };
 
-  revalidatePath("/teacher/scores");
-  return {};
+    revalidatePath("/teacher/scores");
+    return {};
+  });
 }

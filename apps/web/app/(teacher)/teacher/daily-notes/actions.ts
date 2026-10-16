@@ -3,6 +3,7 @@
 import { requireTeacher } from "@schoolos/db";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
+import { logged } from "@/lib/action-log";
 
 // Doc 8: "Free-form text from a teacher about a specific student... One-way
 // -- no reply thread in V1... Immutable once sent -- corrections are new
@@ -17,22 +18,24 @@ const DailyNoteSchema = z.object({
 });
 
 export async function sendDailyNote(formData: FormData): Promise<{ error?: string }> {
-  const parsed = DailyNoteSchema.safeParse({
-    enrollmentId: formData.get("enrollmentId"),
-    category: formData.get("category"),
-    noteText: formData.get("noteText"),
-  });
-  if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "Invalid input" };
+  return logged("teacher.dailyNotes.sendDailyNote", async () => {
+    const parsed = DailyNoteSchema.safeParse({
+      enrollmentId: formData.get("enrollmentId"),
+      category: formData.get("category"),
+      noteText: formData.get("noteText"),
+    });
+    if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "Invalid input" };
 
-  const { supabase, teacherId } = await requireTeacher();
-  const { error } = await supabase.from("DailyNote").insert({
-    enrollment_id: parsed.data.enrollmentId,
-    teacher_id: teacherId,
-    category: parsed.data.category,
-    note_text: parsed.data.noteText,
-  });
-  if (error) return { error: error.message };
+    const { supabase, teacherId } = await requireTeacher();
+    const { error } = await supabase.from("DailyNote").insert({
+      enrollment_id: parsed.data.enrollmentId,
+      teacher_id: teacherId,
+      category: parsed.data.category,
+      note_text: parsed.data.noteText,
+    });
+    if (error) return { error: error.message };
 
-  revalidatePath("/teacher/daily-notes");
-  return {};
+    revalidatePath("/teacher/daily-notes");
+    return {};
+  });
 }

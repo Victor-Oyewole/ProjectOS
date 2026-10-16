@@ -3,6 +3,7 @@
 import { requireAdminSchoolId } from "@schoolos/db";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
+import { logged } from "@/lib/action-log";
 
 // Doc 12 Step 2: Academic Setup. All four creates are ordinary RLS-scoped
 // inserts (academicsession_all_admin / term_all_admin / class_all_admin /
@@ -18,24 +19,26 @@ const SessionSchema = z.object({
 });
 
 export async function createAcademicSession(formData: FormData): Promise<{ error?: string }> {
-  const parsed = SessionSchema.safeParse({
-    name: formData.get("name"),
-    startDate: formData.get("startDate"),
-    endDate: formData.get("endDate"),
-  });
-  if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "Invalid input" };
+  return logged("academicSetup.createAcademicSession", async () => {
+    const parsed = SessionSchema.safeParse({
+      name: formData.get("name"),
+      startDate: formData.get("startDate"),
+      endDate: formData.get("endDate"),
+    });
+    if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "Invalid input" };
 
-  const { supabase, schoolId } = await requireAdminSchoolId();
-  const { error } = await supabase.from("AcademicSession").insert({
-    school_id: schoolId,
-    name: parsed.data.name,
-    start_date: parsed.data.startDate,
-    end_date: parsed.data.endDate,
-  });
-  if (error) return { error: error.message };
+    const { supabase, schoolId } = await requireAdminSchoolId();
+    const { error } = await supabase.from("AcademicSession").insert({
+      school_id: schoolId,
+      name: parsed.data.name,
+      start_date: parsed.data.startDate,
+      end_date: parsed.data.endDate,
+    });
+    if (error) return { error: error.message };
 
-  revalidatePath("/academic-setup");
-  return {};
+    revalidatePath("/academic-setup");
+    return {};
+  });
 }
 
 const TermSchema = z.object({
@@ -46,25 +49,27 @@ const TermSchema = z.object({
 });
 
 export async function createTerm(formData: FormData): Promise<{ error?: string }> {
-  const parsed = TermSchema.safeParse({
-    sessionId: formData.get("sessionId"),
-    name: formData.get("name"),
-    startDate: formData.get("startDate"),
-    endDate: formData.get("endDate"),
-  });
-  if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "Invalid input" };
+  return logged("academicSetup.createTerm", async () => {
+    const parsed = TermSchema.safeParse({
+      sessionId: formData.get("sessionId"),
+      name: formData.get("name"),
+      startDate: formData.get("startDate"),
+      endDate: formData.get("endDate"),
+    });
+    if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "Invalid input" };
 
-  const { supabase } = await requireAdminSchoolId();
-  const { error } = await supabase.from("Term").insert({
-    session_id: parsed.data.sessionId,
-    name: parsed.data.name,
-    start_date: parsed.data.startDate,
-    end_date: parsed.data.endDate,
-  });
-  if (error) return { error: error.message };
+    const { supabase } = await requireAdminSchoolId();
+    const { error } = await supabase.from("Term").insert({
+      session_id: parsed.data.sessionId,
+      name: parsed.data.name,
+      start_date: parsed.data.startDate,
+      end_date: parsed.data.endDate,
+    });
+    if (error) return { error: error.message };
 
-  revalidatePath("/academic-setup");
-  return {};
+    revalidatePath("/academic-setup");
+    return {};
+  });
 }
 
 const NameOnlySchema = z.object({
@@ -72,15 +77,17 @@ const NameOnlySchema = z.object({
 });
 
 export async function createClass(formData: FormData): Promise<{ error?: string }> {
-  const parsed = NameOnlySchema.safeParse({ name: formData.get("name") });
-  if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "Invalid input" };
+  return logged("academicSetup.createClass", async () => {
+    const parsed = NameOnlySchema.safeParse({ name: formData.get("name") });
+    if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "Invalid input" };
 
-  const { supabase, schoolId } = await requireAdminSchoolId();
-  const { error } = await supabase.from("Class").insert({ school_id: schoolId, name: parsed.data.name });
-  if (error) return { error: error.message };
+    const { supabase, schoolId } = await requireAdminSchoolId();
+    const { error } = await supabase.from("Class").insert({ school_id: schoolId, name: parsed.data.name });
+    if (error) return { error: error.message };
 
-  revalidatePath("/academic-setup");
-  return {};
+    revalidatePath("/academic-setup");
+    return {};
+  });
 }
 
 const SubjectSchema = z.object({
@@ -89,22 +96,24 @@ const SubjectSchema = z.object({
 });
 
 export async function createSubject(formData: FormData): Promise<{ error?: string }> {
-  const parsed = SubjectSchema.safeParse({
-    name: formData.get("name"),
-    creditWeight: formData.get("creditWeight") || undefined,
-  });
-  if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "Invalid input" };
+  return logged("academicSetup.createSubject", async () => {
+    const parsed = SubjectSchema.safeParse({
+      name: formData.get("name"),
+      creditWeight: formData.get("creditWeight") || undefined,
+    });
+    if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "Invalid input" };
 
-  const { supabase, schoolId } = await requireAdminSchoolId();
-  const { error } = await supabase.from("Subject").insert({
-    school_id: schoolId,
-    name: parsed.data.name,
-    ...(parsed.data.creditWeight ? { credit_weight: parsed.data.creditWeight } : {}),
-  });
-  if (error) return { error: error.message };
+    const { supabase, schoolId } = await requireAdminSchoolId();
+    const { error } = await supabase.from("Subject").insert({
+      school_id: schoolId,
+      name: parsed.data.name,
+      ...(parsed.data.creditWeight ? { credit_weight: parsed.data.creditWeight } : {}),
+    });
+    if (error) return { error: error.message };
 
-  revalidatePath("/academic-setup");
-  return {};
+    revalidatePath("/academic-setup");
+    return {};
+  });
 }
 
 // Doc 27 Section 3: credit_weight is set per subject "during Academic
@@ -118,22 +127,24 @@ const SubjectCreditWeightSchema = z.object({
 });
 
 export async function setSubjectCreditWeight(formData: FormData): Promise<{ error?: string }> {
-  const parsed = SubjectCreditWeightSchema.safeParse({
-    subjectId: formData.get("subjectId"),
-    creditWeight: formData.get("creditWeight"),
+  return logged("academicSetup.setSubjectCreditWeight", async () => {
+    const parsed = SubjectCreditWeightSchema.safeParse({
+      subjectId: formData.get("subjectId"),
+      creditWeight: formData.get("creditWeight"),
+    });
+    if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "Invalid input" };
+
+    const { supabase, schoolId } = await requireAdminSchoolId();
+    const { error } = await supabase
+      .from("Subject")
+      .update({ credit_weight: parsed.data.creditWeight })
+      .eq("subject_id", parsed.data.subjectId)
+      .eq("school_id", schoolId);
+    if (error) return { error: error.message };
+
+    revalidatePath("/academic-setup");
+    return {};
   });
-  if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "Invalid input" };
-
-  const { supabase, schoolId } = await requireAdminSchoolId();
-  const { error } = await supabase
-    .from("Subject")
-    .update({ credit_weight: parsed.data.creditWeight })
-    .eq("subject_id", parsed.data.subjectId)
-    .eq("school_id", schoolId);
-  if (error) return { error: error.message };
-
-  revalidatePath("/academic-setup");
-  return {};
 }
 
 // Doc 27 Section 1: "a school locks in one assessment model." Doc 27
@@ -149,30 +160,32 @@ const AssessmentModelSchema = z.object({
 });
 
 export async function updateAssessmentModel(formData: FormData): Promise<{ error?: string }> {
-  const parsed = AssessmentModelSchema.safeParse({ assessmentModel: formData.get("assessmentModel") });
-  if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "Invalid input" };
+  return logged("academicSetup.updateAssessmentModel", async () => {
+    const parsed = AssessmentModelSchema.safeParse({ assessmentModel: formData.get("assessmentModel") });
+    if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "Invalid input" };
 
-  const { supabase, schoolId } = await requireAdminSchoolId();
+    const { supabase, schoolId } = await requireAdminSchoolId();
 
-  const [{ count: resultCount }, { count: reportCount }] = await Promise.all([
-    supabase.from("TermResult").select("result_id", { count: "exact", head: true }).eq("school_id", schoolId),
-    supabase.from("TermReportCard").select("report_id", { count: "exact", head: true }).eq("school_id", schoolId),
-  ]);
-  if ((resultCount ?? 0) > 0 || (reportCount ?? 0) > 0) {
-    return {
-      error:
-        "Cannot change the assessment model after results have been computed for this school. Contact support if a genuine switch is needed.",
-    };
-  }
+    const [{ count: resultCount }, { count: reportCount }] = await Promise.all([
+      supabase.from("TermResult").select("result_id", { count: "exact", head: true }).eq("school_id", schoolId),
+      supabase.from("TermReportCard").select("report_id", { count: "exact", head: true }).eq("school_id", schoolId),
+    ]);
+    if ((resultCount ?? 0) > 0 || (reportCount ?? 0) > 0) {
+      return {
+        error:
+          "Cannot change the assessment model after results have been computed for this school. Contact support if a genuine switch is needed.",
+      };
+    }
 
-  const { error } = await supabase
-    .from("School")
-    .update({ assessment_model: parsed.data.assessmentModel })
-    .eq("school_id", schoolId);
-  if (error) return { error: error.message };
+    const { error } = await supabase
+      .from("School")
+      .update({ assessment_model: parsed.data.assessmentModel })
+      .eq("school_id", schoolId);
+    if (error) return { error: error.message };
 
-  revalidatePath("/academic-setup");
-  return {};
+    revalidatePath("/academic-setup");
+    return {};
+  });
 }
 
 // Doc 27 Section 5: GradeScale.bands is one jsonb array per school (unique
@@ -187,50 +200,54 @@ const GradeBandSchema = z.object({
 });
 
 export async function addGradeBand(formData: FormData): Promise<{ error?: string }> {
-  const parsed = GradeBandSchema.safeParse({
-    min: formData.get("min"),
-    max: formData.get("max"),
-    grade: formData.get("grade"),
-    remark: formData.get("remark") || undefined,
+  return logged("academicSetup.addGradeBand", async () => {
+    const parsed = GradeBandSchema.safeParse({
+      min: formData.get("min"),
+      max: formData.get("max"),
+      grade: formData.get("grade"),
+      remark: formData.get("remark") || undefined,
+    });
+    if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "Invalid input" };
+    if (parsed.data.max < parsed.data.min) return { error: "Max must be greater than or equal to min" };
+
+    const { supabase, schoolId } = await requireAdminSchoolId();
+    const { data: existing } = await supabase.from("GradeScale").select("bands").eq("school_id", schoolId).maybeSingle();
+    const bands = Array.isArray(existing?.bands) ? existing.bands : [];
+    bands.push({
+      min: parsed.data.min,
+      max: parsed.data.max,
+      grade: parsed.data.grade,
+      ...(parsed.data.remark ? { remark: parsed.data.remark } : {}),
+    });
+
+    const { error } = await supabase
+      .from("GradeScale")
+      .upsert({ school_id: schoolId, bands }, { onConflict: "school_id" });
+    if (error) return { error: error.message };
+
+    revalidatePath("/academic-setup");
+    return {};
   });
-  if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "Invalid input" };
-  if (parsed.data.max < parsed.data.min) return { error: "Max must be greater than or equal to min" };
-
-  const { supabase, schoolId } = await requireAdminSchoolId();
-  const { data: existing } = await supabase.from("GradeScale").select("bands").eq("school_id", schoolId).maybeSingle();
-  const bands = Array.isArray(existing?.bands) ? existing.bands : [];
-  bands.push({
-    min: parsed.data.min,
-    max: parsed.data.max,
-    grade: parsed.data.grade,
-    ...(parsed.data.remark ? { remark: parsed.data.remark } : {}),
-  });
-
-  const { error } = await supabase
-    .from("GradeScale")
-    .upsert({ school_id: schoolId, bands }, { onConflict: "school_id" });
-  if (error) return { error: error.message };
-
-  revalidatePath("/academic-setup");
-  return {};
 }
 
 const RemoveGradeBandSchema = z.object({ index: z.coerce.number().int().min(0) });
 
 export async function removeGradeBand(formData: FormData): Promise<{ error?: string }> {
-  const parsed = RemoveGradeBandSchema.safeParse({ index: formData.get("index") });
-  if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "Invalid input" };
+  return logged("academicSetup.removeGradeBand", async () => {
+    const parsed = RemoveGradeBandSchema.safeParse({ index: formData.get("index") });
+    if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "Invalid input" };
 
-  const { supabase, schoolId } = await requireAdminSchoolId();
-  const { data: existing } = await supabase.from("GradeScale").select("bands").eq("school_id", schoolId).maybeSingle();
-  const bands = Array.isArray(existing?.bands) ? existing.bands : [];
-  bands.splice(parsed.data.index, 1);
+    const { supabase, schoolId } = await requireAdminSchoolId();
+    const { data: existing } = await supabase.from("GradeScale").select("bands").eq("school_id", schoolId).maybeSingle();
+    const bands = Array.isArray(existing?.bands) ? existing.bands : [];
+    bands.splice(parsed.data.index, 1);
 
-  const { error } = await supabase.from("GradeScale").update({ bands }).eq("school_id", schoolId);
-  if (error) return { error: error.message };
+    const { error } = await supabase.from("GradeScale").update({ bands }).eq("school_id", schoolId);
+    if (error) return { error: error.message };
 
-  revalidatePath("/academic-setup");
-  return {};
+    revalidatePath("/academic-setup");
+    return {};
+  });
 }
 
 // Doc 27 Section 4: MilestoneScale.levels is an ordered array of
@@ -239,38 +256,42 @@ export async function removeGradeBand(formData: FormData): Promise<{ error?: str
 const MilestoneLevelSchema = z.object({ level: z.string().trim().min(1, "Level name is required") });
 
 export async function addMilestoneLevel(formData: FormData): Promise<{ error?: string }> {
-  const parsed = MilestoneLevelSchema.safeParse({ level: formData.get("level") });
-  if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "Invalid input" };
+  return logged("academicSetup.addMilestoneLevel", async () => {
+    const parsed = MilestoneLevelSchema.safeParse({ level: formData.get("level") });
+    if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "Invalid input" };
 
-  const { supabase, schoolId } = await requireAdminSchoolId();
-  const { data: existing } = await supabase.from("MilestoneScale").select("levels").eq("school_id", schoolId).maybeSingle();
-  const levels = (Array.isArray(existing?.levels) ? existing.levels : []) as string[];
-  if (levels.includes(parsed.data.level)) return { error: "That level already exists" };
-  levels.push(parsed.data.level);
+    const { supabase, schoolId } = await requireAdminSchoolId();
+    const { data: existing } = await supabase.from("MilestoneScale").select("levels").eq("school_id", schoolId).maybeSingle();
+    const levels = (Array.isArray(existing?.levels) ? existing.levels : []) as string[];
+    if (levels.includes(parsed.data.level)) return { error: "That level already exists" };
+    levels.push(parsed.data.level);
 
-  const { error } = await supabase
-    .from("MilestoneScale")
-    .upsert({ school_id: schoolId, levels }, { onConflict: "school_id" });
-  if (error) return { error: error.message };
+    const { error } = await supabase
+      .from("MilestoneScale")
+      .upsert({ school_id: schoolId, levels }, { onConflict: "school_id" });
+    if (error) return { error: error.message };
 
-  revalidatePath("/academic-setup");
-  return {};
+    revalidatePath("/academic-setup");
+    return {};
+  });
 }
 
 export async function removeMilestoneLevel(formData: FormData): Promise<{ error?: string }> {
-  const parsed = RemoveGradeBandSchema.safeParse({ index: formData.get("index") });
-  if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "Invalid input" };
+  return logged("academicSetup.removeMilestoneLevel", async () => {
+    const parsed = RemoveGradeBandSchema.safeParse({ index: formData.get("index") });
+    if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "Invalid input" };
 
-  const { supabase, schoolId } = await requireAdminSchoolId();
-  const { data: existing } = await supabase.from("MilestoneScale").select("levels").eq("school_id", schoolId).maybeSingle();
-  const levels = (Array.isArray(existing?.levels) ? existing.levels : []) as string[];
-  levels.splice(parsed.data.index, 1);
+    const { supabase, schoolId } = await requireAdminSchoolId();
+    const { data: existing } = await supabase.from("MilestoneScale").select("levels").eq("school_id", schoolId).maybeSingle();
+    const levels = (Array.isArray(existing?.levels) ? existing.levels : []) as string[];
+    levels.splice(parsed.data.index, 1);
 
-  const { error } = await supabase.from("MilestoneScale").update({ levels }).eq("school_id", schoolId);
-  if (error) return { error: error.message };
+    const { error } = await supabase.from("MilestoneScale").update({ levels }).eq("school_id", schoolId);
+    if (error) return { error: error.message };
 
-  revalidatePath("/academic-setup");
-  return {};
+    revalidatePath("/academic-setup");
+    return {};
+  });
 }
 
 // Doc 16 Milestone 2 needs two more admin-side building blocks the teacher
@@ -290,25 +311,27 @@ const AssignTeacherSchema = z.object({
 });
 
 export async function assignTeacherToClass(formData: FormData): Promise<{ error?: string }> {
-  const parsed = AssignTeacherSchema.safeParse({
-    teacherId: formData.get("teacherId"),
-    classId: formData.get("classId"),
-    subjectId: formData.get("subjectId"),
-    sessionId: formData.get("sessionId"),
-  });
-  if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "Invalid input" };
+  return logged("academicSetup.assignTeacherToClass", async () => {
+    const parsed = AssignTeacherSchema.safeParse({
+      teacherId: formData.get("teacherId"),
+      classId: formData.get("classId"),
+      subjectId: formData.get("subjectId"),
+      sessionId: formData.get("sessionId"),
+    });
+    if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "Invalid input" };
 
-  const { supabase } = await requireAdminSchoolId();
-  const { error } = await supabase.from("TeacherClassAssignment").insert({
-    teacher_id: parsed.data.teacherId,
-    class_id: parsed.data.classId,
-    subject_id: parsed.data.subjectId,
-    session_id: parsed.data.sessionId,
-  });
-  if (error) return { error: error.message };
+    const { supabase } = await requireAdminSchoolId();
+    const { error } = await supabase.from("TeacherClassAssignment").insert({
+      teacher_id: parsed.data.teacherId,
+      class_id: parsed.data.classId,
+      subject_id: parsed.data.subjectId,
+      session_id: parsed.data.sessionId,
+    });
+    if (error) return { error: error.message };
 
-  revalidatePath("/academic-setup");
-  return {};
+    revalidatePath("/academic-setup");
+    return {};
+  });
 }
 
 // Doc 27's admin_compute_term_results blocks the whole compute call unless
@@ -325,28 +348,30 @@ const AssessmentSchema = z.object({
 });
 
 export async function createAssessment(formData: FormData): Promise<{ error?: string }> {
-  const parsed = AssessmentSchema.safeParse({
-    classId: formData.get("classId"),
-    subjectId: formData.get("subjectId"),
-    termId: formData.get("termId"),
-    name: formData.get("name"),
-    weight: formData.get("weight") || undefined,
-  });
-  if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "Invalid input" };
+  return logged("academicSetup.createAssessment", async () => {
+    const parsed = AssessmentSchema.safeParse({
+      classId: formData.get("classId"),
+      subjectId: formData.get("subjectId"),
+      termId: formData.get("termId"),
+      name: formData.get("name"),
+      weight: formData.get("weight") || undefined,
+    });
+    if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "Invalid input" };
 
-  const { supabase, schoolId } = await requireAdminSchoolId();
-  const { error } = await supabase.from("Assessment").insert({
-    school_id: schoolId,
-    class_id: parsed.data.classId,
-    subject_id: parsed.data.subjectId,
-    term_id: parsed.data.termId,
-    name: parsed.data.name,
-    weight: parsed.data.weight ?? 0,
-  });
-  if (error) return { error: error.message };
+    const { supabase, schoolId } = await requireAdminSchoolId();
+    const { error } = await supabase.from("Assessment").insert({
+      school_id: schoolId,
+      class_id: parsed.data.classId,
+      subject_id: parsed.data.subjectId,
+      term_id: parsed.data.termId,
+      name: parsed.data.name,
+      weight: parsed.data.weight ?? 0,
+    });
+    if (error) return { error: error.message };
 
-  revalidatePath("/academic-setup");
-  return {};
+    revalidatePath("/academic-setup");
+    return {};
+  });
 }
 
 const AssessmentWeightSchema = z.object({
@@ -355,20 +380,22 @@ const AssessmentWeightSchema = z.object({
 });
 
 export async function setAssessmentWeight(formData: FormData): Promise<{ error?: string }> {
-  const parsed = AssessmentWeightSchema.safeParse({
-    assessmentId: formData.get("assessmentId"),
-    weight: formData.get("weight"),
+  return logged("academicSetup.setAssessmentWeight", async () => {
+    const parsed = AssessmentWeightSchema.safeParse({
+      assessmentId: formData.get("assessmentId"),
+      weight: formData.get("weight"),
+    });
+    if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "Invalid input" };
+
+    const { supabase, schoolId } = await requireAdminSchoolId();
+    const { error } = await supabase
+      .from("Assessment")
+      .update({ weight: parsed.data.weight })
+      .eq("assessment_id", parsed.data.assessmentId)
+      .eq("school_id", schoolId);
+    if (error) return { error: error.message };
+
+    revalidatePath("/academic-setup");
+    return {};
   });
-  if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "Invalid input" };
-
-  const { supabase, schoolId } = await requireAdminSchoolId();
-  const { error } = await supabase
-    .from("Assessment")
-    .update({ weight: parsed.data.weight })
-    .eq("assessment_id", parsed.data.assessmentId)
-    .eq("school_id", schoolId);
-  if (error) return { error: error.message };
-
-  revalidatePath("/academic-setup");
-  return {};
 }

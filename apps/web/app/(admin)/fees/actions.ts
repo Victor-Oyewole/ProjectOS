@@ -3,6 +3,7 @@
 import { requireAdminSchoolId } from "@schoolos/db";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
+import { logged } from "@/lib/action-log";
 
 // Doc 13 #5 Screen 2: "Record Payment (per student): Term, amount
 // received, method, date, notes -> writes to FeeRecord, triggers status
@@ -24,44 +25,46 @@ const RecordPaymentSchema = z.object({
 });
 
 export async function recordPayment(formData: FormData): Promise<{ error?: string }> {
-  const parsed = RecordPaymentSchema.safeParse({
-    enrollmentId: formData.get("enrollmentId"),
-    termId: formData.get("termId"),
-    amountExpected: formData.get("amountExpected"),
-    amountReceived: formData.get("amountReceived"),
-    paymentMethod: formData.get("paymentMethod") || undefined,
-    notes: formData.get("notes") || undefined,
+  return logged("fees.recordPayment", async () => {
+    const parsed = RecordPaymentSchema.safeParse({
+      enrollmentId: formData.get("enrollmentId"),
+      termId: formData.get("termId"),
+      amountExpected: formData.get("amountExpected"),
+      amountReceived: formData.get("amountReceived"),
+      paymentMethod: formData.get("paymentMethod") || undefined,
+      notes: formData.get("notes") || undefined,
+    });
+    if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "Invalid input" };
+
+    const { supabase, adminId } = await requireAdminSchoolId();
+
+    const { data: existing } = await supabase
+      .from("FeeRecord")
+      .select("amount_paid")
+      .eq("enrollment_id", parsed.data.enrollmentId)
+      .eq("term_id", parsed.data.termId)
+      .maybeSingle();
+
+    const newAmountPaid = (existing?.amount_paid ?? 0) + parsed.data.amountReceived;
+
+    const { error } = await supabase.from("FeeRecord").upsert(
+      {
+        enrollment_id: parsed.data.enrollmentId,
+        term_id: parsed.data.termId,
+        amount_expected: parsed.data.amountExpected,
+        amount_paid: newAmountPaid,
+        payment_method: parsed.data.paymentMethod ?? null,
+        notes: parsed.data.notes ?? null,
+        payment_date: parsed.data.amountReceived > 0 ? new Date().toISOString().slice(0, 10) : null,
+        last_updated_by: adminId ?? null,
+      },
+      { onConflict: "enrollment_id,term_id" },
+    );
+    if (error) return { error: error.message };
+
+    revalidatePath("/fees");
+    return {};
   });
-  if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "Invalid input" };
-
-  const { supabase, adminId } = await requireAdminSchoolId();
-
-  const { data: existing } = await supabase
-    .from("FeeRecord")
-    .select("amount_paid")
-    .eq("enrollment_id", parsed.data.enrollmentId)
-    .eq("term_id", parsed.data.termId)
-    .maybeSingle();
-
-  const newAmountPaid = (existing?.amount_paid ?? 0) + parsed.data.amountReceived;
-
-  const { error } = await supabase.from("FeeRecord").upsert(
-    {
-      enrollment_id: parsed.data.enrollmentId,
-      term_id: parsed.data.termId,
-      amount_expected: parsed.data.amountExpected,
-      amount_paid: newAmountPaid,
-      payment_method: parsed.data.paymentMethod ?? null,
-      notes: parsed.data.notes ?? null,
-      payment_date: parsed.data.amountReceived > 0 ? new Date().toISOString().slice(0, 10) : null,
-      last_updated_by: adminId ?? null,
-    },
-    { onConflict: "enrollment_id,term_id" },
-  );
-  if (error) return { error: error.message };
-
-  revalidatePath("/fees");
-  return {};
 }
 
 // Doc 13 #5 Screen 3 / Doc 9: "Send Reminder: Generates in-app Notification
@@ -78,58 +81,60 @@ const SendRemindersSchema = z.object({
 });
 
 export async function sendFeeReminders(formData: FormData): Promise<{ error?: string; count?: number }> {
-  const parsed = SendRemindersSchema.safeParse({ termId: formData.get("termId") });
-  if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "Invalid input" };
+  return logged("fees.sendFeeReminders", async () => {
+    const parsed = SendRemindersSchema.safeParse({ termId: formData.get("termId") });
+    if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "Invalid input" };
 
-  const { supabase } = await requireAdminSchoolId();
+    const { supabase } = await requireAdminSchoolId();
 
-  // No explicit school filter here -- feerecord_all_admin's RLS policy
-  // already scopes every row to the caller's own school via the same
-  // SchoolEnrollment join; `!inner` just guarantees the join is non-null
-  // so it's safe to read without an extra null check below.
-  const { data: records, error: fetchError } = await supabase
-    .from("FeeRecord")
-    .select("amount_expected, amount_paid, status, SchoolEnrollment!inner(platform_student_id, PlatformStudent(name))")
-    .eq("term_id", parsed.data.termId)
-    .in("status", ["Owing", "Partial"]);
-  if (fetchError) return { error: fetchError.message };
+    // No explicit school filter here -- feerecord_all_admin's RLS policy
+    // already scopes every row to the caller's own school via the same
+    // SchoolEnrollment join; `!inner` just guarantees the join is non-null
+    // so it's safe to read without an extra null check below.
+    const { data: records, error: fetchError } = await supabase
+      .from("FeeRecord")
+      .select("amount_expected, amount_paid, status, SchoolEnrollment!inner(platform_student_id, PlatformStudent(name))")
+      .eq("term_id", parsed.data.termId)
+      .in("status", ["Owing", "Partial"]);
+    if (fetchError) return { error: fetchError.message };
 
-  const rows = records ?? [];
-  if (rows.length === 0) return { count: 0 };
+    const rows = records ?? [];
+    if (rows.length === 0) return { count: 0 };
 
-  const platformStudentIds = [...new Set(rows.map((r) => r.SchoolEnrollment.platform_student_id))];
-  const { data: relationships, error: relError } = await supabase
-    .from("FamilyStudentRelationship")
-    .select("membership_id, platform_student_id")
-    .in("platform_student_id", platformStudentIds);
-  if (relError) return { error: relError.message };
+    const platformStudentIds = [...new Set(rows.map((r) => r.SchoolEnrollment.platform_student_id))];
+    const { data: relationships, error: relError } = await supabase
+      .from("FamilyStudentRelationship")
+      .select("membership_id, platform_student_id")
+      .in("platform_student_id", platformStudentIds);
+    if (relError) return { error: relError.message };
 
-  const notifications = rows.flatMap((r) => {
-    const matches = (relationships ?? []).filter((rel) => rel.platform_student_id === r.SchoolEnrollment.platform_student_id);
-    return matches.map((rel) => ({
-      membership_id: rel.membership_id,
-      platform_student_id: r.SchoolEnrollment.platform_student_id,
-      source_type: "admin" as const,
-      category: "fee" as const,
-      message_text: `Fee reminder: ${r.SchoolEnrollment.PlatformStudent?.name ?? "your child"} has an outstanding balance (${r.status}) -- expected ${r.amount_expected}, paid ${r.amount_paid}.`,
-    }));
+    const notifications = rows.flatMap((r) => {
+      const matches = (relationships ?? []).filter((rel) => rel.platform_student_id === r.SchoolEnrollment.platform_student_id);
+      return matches.map((rel) => ({
+        membership_id: rel.membership_id,
+        platform_student_id: r.SchoolEnrollment.platform_student_id,
+        source_type: "admin" as const,
+        category: "fee" as const,
+        message_text: `Fee reminder: ${r.SchoolEnrollment.PlatformStudent?.name ?? "your child"} has an outstanding balance (${r.status}) -- expected ${r.amount_expected}, paid ${r.amount_paid}.`,
+      }));
+    });
+
+    // Dedup key is (membership_id, platform_student_id), not membership_id
+    // alone -- a family with two owing children must get two reminders, one
+    // per child, not one swallowing the other.
+    const seen = new Set<string>();
+    const deduped = notifications
+      .filter((n) => {
+        const key = `${n.membership_id}:${n.platform_student_id}`;
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      })
+      .map(({ platform_student_id, ...rest }) => rest);
+
+    const { error: insertError } = await supabase.from("Notification").insert(deduped);
+    if (insertError) return { error: insertError.message };
+
+    return { count: deduped.length };
   });
-
-  // Dedup key is (membership_id, platform_student_id), not membership_id
-  // alone -- a family with two owing children must get two reminders, one
-  // per child, not one swallowing the other.
-  const seen = new Set<string>();
-  const deduped = notifications
-    .filter((n) => {
-      const key = `${n.membership_id}:${n.platform_student_id}`;
-      if (seen.has(key)) return false;
-      seen.add(key);
-      return true;
-    })
-    .map(({ platform_student_id, ...rest }) => rest);
-
-  const { error: insertError } = await supabase.from("Notification").insert(deduped);
-  if (insertError) return { error: insertError.message };
-
-  return { count: deduped.length };
 }

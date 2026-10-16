@@ -1,4 +1,4 @@
-import type { SessionClaims } from "@schoolos/db";
+import { createServerClient, getSessionClaims, type SessionClaims } from "@schoolos/db";
 
 // Doc 3 Section 6: "Structured logging: JSON logs for all Server Actions
 // and background jobs, including: actor, action, school_id, duration,
@@ -33,6 +33,33 @@ export async function logAction(
       outcome,
     }),
   );
+}
+
+// Generic wrapper for every OTHER Server Action (not login/register/
+// activate, which establish the session mid-function and need the more
+// careful run()-and-log-the-result-shape treatment those three got) --
+// the session already exists before any of these run (they all start
+// with requireAdminSchoolId()/requireTeacher()/requireFamily()), so
+// claims can be fetched once, before `fn` even runs. Wrap just the
+// `return` statement, e.g. `return logged("admins.addSecondAdmin", () =>
+// { ...original body... });` -- the exported function's own literal
+// shape is untouched either way, same safety property as run().
+export async function logged<T>(action: string, fn: () => Promise<T>): Promise<T> {
+  const startedAt = Date.now();
+  const claims = await getSessionClaims(await createServerClient()).catch(() => null);
+
+  try {
+    const result = await fn();
+    const outcome =
+      result && typeof result === "object" && "error" in result && (result as { error?: unknown }).error
+        ? "error"
+        : "success";
+    await logAction(action, startedAt, outcome, claims);
+    return result;
+  } catch (err) {
+    await logAction(action, startedAt, isNextRedirect(err) ? "success" : "error", claims);
+    throw err;
+  }
 }
 
 // Next's redirect() throws an Error whose `.digest` starts with

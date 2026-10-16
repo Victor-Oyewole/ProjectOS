@@ -4,6 +4,7 @@ import { requireAdminSchoolId } from "@schoolos/db";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { parseCsvWithHeader } from "@/lib/csv";
+import { logged } from "@/lib/action-log";
 
 // Doc 12 Step 4, Families tab. Person has no admin-insert RLS policy (it's
 // platform-level, see 040_people.sql's note) -- admin_create_family_person()
@@ -24,42 +25,44 @@ const FamilySchema = z.object({
 });
 
 export async function addFamily(formData: FormData): Promise<{ error?: string }> {
-  const parsed = FamilySchema.safeParse({
-    guardianName: formData.get("guardianName"),
-    relationship: formData.get("relationship") || undefined,
-    contactInfo: formData.get("contactInfo") || undefined,
-    studentIds: formData.getAll("studentIds").map(String),
-  });
-  if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "Invalid input" };
-
-  const { supabase } = await requireAdminSchoolId();
-
-  const { data: bootstrap, error: bootstrapError } = await supabase.rpc("admin_create_family_person", {
-    p_name: parsed.data.guardianName,
-    p_contact_info: parsed.data.contactInfo,
-  });
-  if (bootstrapError) return { error: bootstrapError.message };
-  const { membership_id: membershipId } = bootstrap as { membership_id: string; code: string };
-
-  const { error: guardianError } = await supabase.from("Guardian").insert({
-    membership_id: membershipId,
-    name: parsed.data.guardianName,
-    relationship: parsed.data.relationship ?? null,
-    contact_info: parsed.data.contactInfo ?? null,
-  });
-  if (guardianError) return { error: guardianError.message };
-
-  for (const platformStudentId of parsed.data.studentIds ?? []) {
-    const { error: linkError } = await supabase.from("FamilyStudentRelationship").insert({
-      membership_id: membershipId,
-      platform_student_id: platformStudentId,
-      relationship_type: "parent",
+  return logged("people.families.addFamily", async () => {
+    const parsed = FamilySchema.safeParse({
+      guardianName: formData.get("guardianName"),
+      relationship: formData.get("relationship") || undefined,
+      contactInfo: formData.get("contactInfo") || undefined,
+      studentIds: formData.getAll("studentIds").map(String),
     });
-    if (linkError) return { error: linkError.message };
-  }
+    if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "Invalid input" };
 
-  revalidatePath("/people/families");
-  return {};
+    const { supabase } = await requireAdminSchoolId();
+
+    const { data: bootstrap, error: bootstrapError } = await supabase.rpc("admin_create_family_person", {
+      p_name: parsed.data.guardianName,
+      p_contact_info: parsed.data.contactInfo,
+    });
+    if (bootstrapError) return { error: bootstrapError.message };
+    const { membership_id: membershipId } = bootstrap as { membership_id: string; code: string };
+
+    const { error: guardianError } = await supabase.from("Guardian").insert({
+      membership_id: membershipId,
+      name: parsed.data.guardianName,
+      relationship: parsed.data.relationship ?? null,
+      contact_info: parsed.data.contactInfo ?? null,
+    });
+    if (guardianError) return { error: guardianError.message };
+
+    for (const platformStudentId of parsed.data.studentIds ?? []) {
+      const { error: linkError } = await supabase.from("FamilyStudentRelationship").insert({
+        membership_id: membershipId,
+        platform_student_id: platformStudentId,
+        relationship_type: "parent",
+      });
+      if (linkError) return { error: linkError.message };
+    }
+
+    revalidatePath("/people/families");
+    return {};
+  });
 }
 
 // Doc 12 Step 4, "[Bulk Import CSV]". Expected columns: guardian_name
@@ -76,41 +79,45 @@ export interface FamilyCsvRow {
 }
 
 export async function previewFamiliesCsv(csvText: string): Promise<{ error?: string; rows?: FamilyCsvRow[] }> {
-  const records = parseCsvWithHeader(csvText);
-  if (records.length === 0) return { error: "The file has no data rows." };
+  return logged("people.families.previewFamiliesCsv", async () => {
+    const records = parseCsvWithHeader(csvText);
+    if (records.length === 0) return { error: "The file has no data rows." };
 
-  const rows: FamilyCsvRow[] = records.map((record, index) => {
-    const errors: string[] = [];
-    const guardianName = record.guardian_name ?? "";
-    if (!guardianName) errors.push("guardian_name is required");
+    const rows: FamilyCsvRow[] = records.map((record, index) => {
+      const errors: string[] = [];
+      const guardianName = record.guardian_name ?? "";
+      if (!guardianName) errors.push("guardian_name is required");
 
-    return {
-      rowNumber: index + 2,
-      guardianName,
-      relationship: record.relationship ?? "",
-      contactInfo: record.contact_info ?? "",
-      errors,
-    };
+      return {
+        rowNumber: index + 2,
+        guardianName,
+        relationship: record.relationship ?? "",
+        contactInfo: record.contact_info ?? "",
+        errors,
+      };
+    });
+
+    return { rows };
   });
-
-  return { rows };
 }
 
 export async function confirmFamiliesCsv(rows: FamilyCsvRow[]): Promise<{ error?: string }> {
-  if (rows.some((r) => r.errors.length > 0)) {
-    return { error: "Fix all row errors before confirming -- no records were created." };
-  }
+  return logged("people.families.confirmFamiliesCsv", async () => {
+    if (rows.some((r) => r.errors.length > 0)) {
+      return { error: "Fix all row errors before confirming -- no records were created." };
+    }
 
-  const { supabase } = await requireAdminSchoolId();
-  const { error } = await supabase.rpc("admin_bulk_add_families", {
-    p_rows: rows.map((r) => ({
-      guardian_name: r.guardianName,
-      relationship: r.relationship || null,
-      contact_info: r.contactInfo || null,
-    })),
+    const { supabase } = await requireAdminSchoolId();
+    const { error } = await supabase.rpc("admin_bulk_add_families", {
+      p_rows: rows.map((r) => ({
+        guardian_name: r.guardianName,
+        relationship: r.relationship || null,
+        contact_info: r.contactInfo || null,
+      })),
+    });
+    if (error) return { error: error.message };
+
+    revalidatePath("/people/families");
+    return {};
   });
-  if (error) return { error: error.message };
-
-  revalidatePath("/people/families");
-  return {};
 }

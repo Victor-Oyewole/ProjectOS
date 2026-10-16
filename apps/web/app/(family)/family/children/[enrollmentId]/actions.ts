@@ -3,6 +3,7 @@
 import { requireFamily } from "@schoolos/db";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
+import { logged } from "@/lib/action-log";
 
 // Doc 28 Section 6: "Family dashboard gains a 'Request Data Deletion'
 // action under account/profile settings." No settings/profile page exists
@@ -19,25 +20,27 @@ const RequestDeletionSchema = z.object({
 });
 
 export async function requestDataDeletion(formData: FormData): Promise<{ error?: string }> {
-  const parsed = RequestDeletionSchema.safeParse({ enrollmentId: formData.get("enrollmentId") });
-  if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "Invalid input" };
+  return logged("family.children.requestDataDeletion", async () => {
+    const parsed = RequestDeletionSchema.safeParse({ enrollmentId: formData.get("enrollmentId") });
+    if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "Invalid input" };
 
-  const { supabase, schoolId } = await requireFamily();
+    const { supabase, schoolId } = await requireFamily();
 
-  const { data: enrollment, error: fetchError } = await supabase
-    .from("SchoolEnrollment")
-    .select("platform_student_id")
-    .eq("enrollment_id", parsed.data.enrollmentId)
-    .maybeSingle();
-  if (fetchError) return { error: fetchError.message };
-  if (!enrollment) return { error: "Enrollment not found." };
+    const { data: enrollment, error: fetchError } = await supabase
+      .from("SchoolEnrollment")
+      .select("platform_student_id")
+      .eq("enrollment_id", parsed.data.enrollmentId)
+      .maybeSingle();
+    if (fetchError) return { error: fetchError.message };
+    if (!enrollment) return { error: "Enrollment not found." };
 
-  const { error } = await supabase.rpc("family_request_deletion", {
-    p_platform_student_id: enrollment.platform_student_id,
-    p_school_id: schoolId,
+    const { error } = await supabase.rpc("family_request_deletion", {
+      p_platform_student_id: enrollment.platform_student_id,
+      p_school_id: schoolId,
+    });
+    if (error) return { error: error.message };
+
+    revalidatePath(`/family/children/${parsed.data.enrollmentId}`);
+    return {};
   });
-  if (error) return { error: error.message };
-
-  revalidatePath(`/family/children/${parsed.data.enrollmentId}`);
-  return {};
 }
