@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter, Lexend } from "next/font/google";
 import "./globals.css";
+import { SentryUserContext } from "./sentry-user-context";
 
 // Doc 18 Section 1 (typography) / Doc 21 Section 7 (performance): self-hosted
 // via next/font (downloaded at build time, served from this origin, zero
@@ -17,7 +18,10 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={`${inter.variable} ${lexend.variable}`}>
-      <body className="min-h-screen bg-bg font-sans text-ink">{children}</body>
+      <body className="min-h-screen bg-bg font-sans text-ink">
+        <SentryUserContext />
+        {children}
+      </body>
     </html>
   );
 }

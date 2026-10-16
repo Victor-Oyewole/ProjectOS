@@ -1,5 +1,6 @@
 "use client";
 
+import * as Sentry from "@sentry/nextjs";
 import { useEffect } from "react";
 import { ErrorState } from "@schoolos/ui";
 
@@ -8,7 +9,7 @@ import { ErrorState } from "@schoolos/ui";
 // family screen.
 export default function FamilyError({ error, reset }: { error: Error & { digest?: string }; reset: () => void }) {
   useEffect(() => {
-    console.error(error);
+    Sentry.captureException(error);
   }, [error]);
 
   return (

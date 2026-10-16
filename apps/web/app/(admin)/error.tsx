@@ -1,5 +1,6 @@
 "use client";
 
+import * as Sentry from "@sentry/nextjs";
 import { useEffect } from "react";
 import { ErrorState } from "@schoolos/ui";
 
@@ -14,10 +15,11 @@ import { ErrorState } from "@schoolos/ui";
 export default function AdminError({ error, reset }: { error: Error & { digest?: string }; reset: () => void }) {
   useEffect(() => {
     // Doc 19 Section 1 also requires "errors logged to monitoring (Doc
-    // 20) regardless of what's shown to the user" -- no monitoring sink
-    // exists yet (Milestone 7 scope, see ErrorState's own comment), so
-    // this is a console fallback, not a silent no-op.
-    console.error(error);
+    // 20) regardless of what's shown to the user" -- Milestone 7 added
+    // Sentry (apps/web/instrumentation-client.ts); role/school_id context
+    // is attached globally by <SentryUserContext> in the root layout, not
+    // here, so every capture across the app carries it consistently.
+    Sentry.captureException(error);
   }, [error]);
 
   return (
