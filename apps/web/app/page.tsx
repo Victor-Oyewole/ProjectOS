@@ -13,11 +13,11 @@ export default function HomePage() {
       </p>
       <Link
         href="/register"
-        className="rounded-md bg-primary px-6 py-3 font-medium text-white hover:bg-primary-dark"
+        className="rounded-md bg-primary px-6 py-3 font-medium text-white hover:bg-primary-dark transition-colors duration-fast ease-standard"
       >
         Register your school
       </Link>
-      <Link href="/login" className="text-sm text-ink-secondary underline hover:text-ink">
+      <Link href="/login" className="text-sm text-ink-secondary underline hover:text-ink transition-colors duration-fast ease-standard">
         Already registered? Log in
       </Link>
     </main>

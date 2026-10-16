@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { saveMilestoneAssessments } from "./actions";
+import { Select } from "@schoolos/ui";
 
 export function MilestoneGrid({
   subjectId,
@@ -64,7 +65,7 @@ export function MilestoneGrid({
               <tr key={s.enrollmentId}>
                 <td className="py-1 pr-2">{s.name}</td>
                 <td className="py-1 pr-2">
-                  <select
+                  <Select
                     value={levelGrid[s.enrollmentId] ?? ""}
                     onChange={(e) => setLevelGrid((prev) => ({ ...prev, [s.enrollmentId]: e.target.value }))}
                     className="rounded-md border border-border px-2 py-1 text-sm"
@@ -75,7 +76,7 @@ export function MilestoneGrid({
                         {level}
                       </option>
                     ))}
-                  </select>
+                  </Select>
                 </td>
                 <td className="py-1 pr-2">
                   <input
@@ -94,7 +95,7 @@ export function MilestoneGrid({
         type="button"
         disabled={isPending}
         onClick={handleSave}
-        className="self-start rounded-sm bg-primary px-4 py-1.5 text-sm font-medium text-white hover:bg-primary-dark disabled:opacity-60"
+        className="self-start rounded-sm bg-primary px-4 py-1.5 text-sm font-medium text-white hover:bg-primary-dark disabled:opacity-60 transition-colors duration-fast ease-standard"
       >
         Save milestone assessments
       </button>

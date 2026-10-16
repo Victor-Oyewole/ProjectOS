@@ -3,6 +3,7 @@
 import { createAdminClient, createServerClient } from "@schoolos/db";
 import { redirect } from "next/navigation";
 import { z } from "zod";
+import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
 
 // Doc 23 Section 1 step 3: "Server Action validates input (zod schema)
 // BEFORE touching the database."
@@ -27,6 +28,14 @@ export async function registerSchool(formData: FormData): Promise<{ error: strin
     return { error: parsed.error.issues[0]?.message ?? "Invalid input" };
   }
   const { schoolName, country, adminName, email, password } = parsed.data;
+
+  // Doc 3 Section 6: rate limiting on auth endpoints. Keyed by IP, not
+  // email -- there's no account yet at this point, so IP is the only
+  // identifier available, same tradeoff noted in lib/rate-limit.ts.
+  const allowed = await checkRateLimit(createAdminClient(), `register:${await getClientIp()}`, 5, 3600);
+  if (!allowed) {
+    return { error: "Too many registration attempts from this network. Please wait and try again." };
+  }
 
   // The admin's auth user is created via the service-role client with
   // email_confirm skipped, not the ordinary signUp() flow -- Doc 24 Section

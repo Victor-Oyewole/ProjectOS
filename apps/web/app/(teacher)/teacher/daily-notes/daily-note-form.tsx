@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { useActionState } from "react";
 import { sendDailyNote } from "./actions";
+import { Select } from "@schoolos/ui";
 
 export function DailyNoteForm({
   classes,
@@ -32,7 +33,7 @@ export function DailyNoteForm({
       <div className="flex flex-wrap gap-2">
         <div className="flex flex-col gap-1">
           <label className="text-xs text-ink-secondary">Class</label>
-          <select
+          <Select
             value={classId}
             onChange={(e) => setClassId(e.target.value)}
             className="rounded-md border border-border px-2 py-1.5 text-sm"
@@ -43,11 +44,11 @@ export function DailyNoteForm({
                 {c.className}
               </option>
             ))}
-          </select>
+          </Select>
         </div>
         <div className="flex flex-col gap-1">
           <label className="text-xs text-ink-secondary">Student</label>
-          <select
+          <Select
             name="enrollmentId"
             required
             disabled={!classId}
@@ -59,16 +60,16 @@ export function DailyNoteForm({
                 {s.name}
               </option>
             ))}
-          </select>
+          </Select>
         </div>
         <div className="flex flex-col gap-1">
           <label className="text-xs text-ink-secondary">Category</label>
-          <select name="category" required className="rounded-md border border-border px-2 py-1.5 text-sm">
+          <Select name="category" required className="rounded-md border border-border px-2 py-1.5 text-sm">
             <option value="general">General</option>
             <option value="academic">Academic</option>
             <option value="behavior">Behavior</option>
             <option value="health">Health</option>
-          </select>
+          </Select>
         </div>
       </div>
 
@@ -80,7 +81,7 @@ export function DailyNoteForm({
       <button
         type="submit"
         disabled={isPending}
-        className="self-start rounded-sm bg-primary px-4 py-1.5 text-sm font-medium text-white hover:bg-primary-dark disabled:opacity-60"
+        className="self-start rounded-sm bg-primary px-4 py-1.5 text-sm font-medium text-white hover:bg-primary-dark disabled:opacity-60 transition-colors duration-fast ease-standard"
       >
         Send note
       </button>

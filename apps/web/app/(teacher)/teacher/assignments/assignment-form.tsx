@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { useActionState } from "react";
 import { createAssignment } from "./actions";
+import { Select } from "@schoolos/ui";
 
 interface ClassSubject {
   classId: string;
@@ -43,7 +44,7 @@ export function AssignmentForm({ classSubjects }: { classSubjects: ClassSubject[
       <div className="flex flex-wrap gap-2">
         <div className="flex flex-col gap-1">
           <label className="text-xs text-ink-secondary">Class</label>
-          <select
+          <Select
             name="classId"
             required
             value={classId}
@@ -56,18 +57,18 @@ export function AssignmentForm({ classSubjects }: { classSubjects: ClassSubject[
                 {c.className}
               </option>
             ))}
-          </select>
+          </Select>
         </div>
         <div className="flex flex-col gap-1">
           <label className="text-xs text-ink-secondary">Subject</label>
-          <select name="subjectId" required disabled={!classId} className="rounded-md border border-border px-2 py-1.5 text-sm">
+          <Select name="subjectId" required disabled={!classId} className="rounded-md border border-border px-2 py-1.5 text-sm">
             <option value="">—</option>
             {subjects.map((s) => (
               <option key={s.subjectId} value={s.subjectId}>
                 {s.subjectName}
               </option>
             ))}
-          </select>
+          </Select>
         </div>
       </div>
 
@@ -100,7 +101,7 @@ export function AssignmentForm({ classSubjects }: { classSubjects: ClassSubject[
       <button
         type="submit"
         disabled={isPending}
-        className="self-start rounded-sm bg-primary px-4 py-1.5 text-sm font-medium text-white hover:bg-primary-dark disabled:opacity-60"
+        className="self-start rounded-sm bg-primary px-4 py-1.5 text-sm font-medium text-white hover:bg-primary-dark disabled:opacity-60 transition-colors duration-fast ease-standard"
       >
         Schedule assignment
       </button>

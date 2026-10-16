@@ -15,38 +15,38 @@ export default async function PeopleLayout({ children }: { children: React.React
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-semibold">People setup</h1>
         <div className="flex gap-4">
-          <Link href="/fees" className="text-sm font-medium text-ink-secondary hover:text-ink">
+          <Link href="/fees" className="text-sm font-medium text-ink-secondary hover:text-ink transition-colors duration-fast ease-standard">
             Fees
           </Link>
-          <Link href="/results" className="text-sm font-medium text-ink-secondary hover:text-ink">
+          <Link href="/results" className="text-sm font-medium text-ink-secondary hover:text-ink transition-colors duration-fast ease-standard">
             Results
           </Link>
-          <Link href="/transfers" className="text-sm font-medium text-ink-secondary hover:text-ink">
+          <Link href="/transfers" className="text-sm font-medium text-ink-secondary hover:text-ink transition-colors duration-fast ease-standard">
             Transfers
           </Link>
-          <Link href="/deletion-requests" className="text-sm font-medium text-ink-secondary hover:text-ink">
+          <Link href="/deletion-requests" className="text-sm font-medium text-ink-secondary hover:text-ink transition-colors duration-fast ease-standard">
             Deletion requests
           </Link>
-          <Link href="/admins" className="text-sm font-medium text-ink-secondary hover:text-ink">
+          <Link href="/admins" className="text-sm font-medium text-ink-secondary hover:text-ink transition-colors duration-fast ease-standard">
             Manage school admins
           </Link>
         </div>
       </div>
       <nav className="flex gap-4 border-b border-border text-sm font-medium">
-        <Link href="/people/teachers" className="px-1 pb-3 hover:text-ink">
+        <Link href="/people/teachers" className="px-1 pb-3 hover:text-ink transition-colors duration-fast ease-standard">
           Teachers
         </Link>
-        <Link href="/people/students" className="px-1 pb-3 hover:text-ink">
+        <Link href="/people/students" className="px-1 pb-3 hover:text-ink transition-colors duration-fast ease-standard">
           Students
         </Link>
-        <Link href="/people/families" className="px-1 pb-3 hover:text-ink">
+        <Link href="/people/families" className="px-1 pb-3 hover:text-ink transition-colors duration-fast ease-standard">
           Families
         </Link>
       </nav>
       {children}
       <Link
         href="/activations"
-        className="self-start rounded-md bg-primary px-6 py-3 font-medium text-white hover:bg-primary-dark"
+        className="self-start rounded-md bg-primary px-6 py-3 font-medium text-white hover:bg-primary-dark transition-colors duration-fast ease-standard"
       >
         Save &amp; continue to distribute activations
       </Link>

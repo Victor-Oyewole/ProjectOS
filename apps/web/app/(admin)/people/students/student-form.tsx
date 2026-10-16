@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { Select } from "@schoolos/ui";
 import {
   confirmStudentMatch,
   createNewStudent,
@@ -84,7 +85,7 @@ export function StudentForm({ classes }: { classes: { class_id: string; name: st
                 type="button"
                 disabled={isPending}
                 onClick={() => handleConfirmMatch(c.platform_student_id)}
-                className="rounded-md border border-border px-3 py-1 text-xs font-medium hover:bg-primary-light disabled:opacity-60"
+                className="rounded-md border border-border px-3 py-1 text-xs font-medium hover:bg-primary-light disabled:opacity-60 transition-colors duration-fast ease-standard"
               >
                 Same student
               </button>
@@ -95,7 +96,7 @@ export function StudentForm({ classes }: { classes: { class_id: string; name: st
           type="button"
           disabled={isPending}
           onClick={handleCreateAsNew}
-          className="self-start rounded-sm bg-primary px-3 py-1.5 text-xs font-medium text-white hover:bg-primary-dark disabled:opacity-60"
+          className="self-start rounded-sm bg-primary px-3 py-1.5 text-xs font-medium text-white hover:bg-primary-dark disabled:opacity-60 transition-colors duration-fast ease-standard"
         >
           Different student — add as new
         </button>
@@ -121,19 +122,19 @@ export function StudentForm({ classes }: { classes: { class_id: string; name: st
       </div>
       <div className="flex flex-col gap-1">
         <label className="text-xs text-ink-secondary">Class (optional)</label>
-        <select name="classId" className="rounded-md border border-border px-2 py-1.5 text-sm">
+        <Select name="classId" className="rounded-md border border-border px-2 py-1.5 text-sm">
           <option value="">—</option>
           {classes.map((c) => (
             <option key={c.class_id} value={c.class_id}>
               {c.name}
             </option>
           ))}
-        </select>
+        </Select>
       </div>
       <button
         type="submit"
         disabled={isPending}
-        className="rounded-sm bg-primary px-4 py-1.5 text-sm font-medium text-white hover:bg-primary-dark disabled:opacity-60"
+        className="rounded-sm bg-primary px-4 py-1.5 text-sm font-medium text-white hover:bg-primary-dark disabled:opacity-60 transition-colors duration-fast ease-standard"
       >
         Add student
       </button>

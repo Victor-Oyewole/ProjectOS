@@ -23,7 +23,7 @@ export function SendReminderButton({ termId }: { termId: string }) {
         type="button"
         disabled={isPending}
         onClick={handleClick}
-        className="rounded-sm border border-border px-3 py-1.5 text-sm font-medium hover:bg-primary-light disabled:opacity-60"
+        className="rounded-sm border border-border px-3 py-1.5 text-sm font-medium hover:bg-primary-light disabled:opacity-60 transition-colors duration-fast ease-standard"
       >
         Send reminder
       </button>

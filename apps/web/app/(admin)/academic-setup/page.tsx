@@ -269,7 +269,7 @@ export default async function AcademicSetupPage() {
 
       <Link
         href="/admins"
-        className="self-start rounded-md bg-primary px-6 py-3 font-medium text-white hover:bg-primary-dark"
+        className="self-start rounded-md bg-primary px-6 py-3 font-medium text-white hover:bg-primary-dark transition-colors duration-fast ease-standard"
       >
         Save &amp; continue
       </Link>

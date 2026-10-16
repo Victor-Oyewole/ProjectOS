@@ -1,7 +1,7 @@
 import { createServerClient, getSessionClaims } from "@schoolos/db";
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { Button, EmptyState, FeeStatusBadge } from "@schoolos/ui";
+import { Button, EmptyState, FeeStatusBadge, Select } from "@schoolos/ui";
 import { RecordPaymentForm } from "./record-payment-form";
 import { SendReminderButton } from "./send-reminder-button";
 
@@ -81,34 +81,34 @@ export default async function FeesPage({
       <form method="get" className="flex flex-wrap items-end gap-2">
         <div className="flex flex-col gap-1">
           <label className="text-xs text-ink-secondary">Term</label>
-          <select name="termId" defaultValue={termId ?? ""} className="rounded-sm border border-border px-2 py-1.5 text-sm">
+          <Select name="termId" defaultValue={termId ?? ""} className="rounded-sm border border-border px-2 py-1.5 text-sm">
             <option value="">—</option>
             {terms.map((t) => (
               <option key={t.id} value={t.id}>
                 {t.name}
               </option>
             ))}
-          </select>
+          </Select>
         </div>
         <div className="flex flex-col gap-1">
           <label className="text-xs text-ink-secondary">Class</label>
-          <select name="classId" defaultValue={classId ?? ""} className="rounded-sm border border-border px-2 py-1.5 text-sm">
+          <Select name="classId" defaultValue={classId ?? ""} className="rounded-sm border border-border px-2 py-1.5 text-sm">
             <option value="">All</option>
             {(classes ?? []).map((c) => (
               <option key={c.class_id} value={c.class_id}>
                 {c.name}
               </option>
             ))}
-          </select>
+          </Select>
         </div>
         <div className="flex flex-col gap-1">
           <label className="text-xs text-ink-secondary">Status</label>
-          <select name="status" defaultValue={status ?? ""} className="rounded-sm border border-border px-2 py-1.5 text-sm">
+          <Select name="status" defaultValue={status ?? ""} className="rounded-sm border border-border px-2 py-1.5 text-sm">
             <option value="">All</option>
             <option value="Paid">Paid</option>
             <option value="Partial">Partial</option>
             <option value="Owing">Owing</option>
-          </select>
+          </Select>
         </div>
         <Button type="submit" variant="secondary">
           Load
@@ -120,7 +120,7 @@ export default async function FeesPage({
           <div className="flex items-center gap-2">
             <Link
               href={`/fees/export?termId=${termId}${classId ? `&classId=${classId}` : ""}${status ? `&status=${status}` : ""}`}
-              className="inline-flex min-h-[44px] items-center justify-center rounded-sm border border-primary px-5 py-3 text-sm font-medium text-primary hover:bg-primary-light"
+              className="inline-flex min-h-[44px] items-center justify-center rounded-sm border border-primary px-5 py-3 text-sm font-medium text-primary hover:bg-primary-light transition-colors duration-fast ease-standard"
             >
               Export CSV
             </Link>

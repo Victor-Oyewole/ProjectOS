@@ -1,6 +1,6 @@
 import { createServerClient, getSessionClaims } from "@schoolos/db";
 import { redirect } from "next/navigation";
-import { Button } from "@schoolos/ui";
+import { Button, Select } from "@schoolos/ui";
 import { AttendanceForm } from "./attendance-form";
 
 export default async function TeacherAttendancePage({
@@ -59,7 +59,7 @@ export default async function TeacherAttendancePage({
       <form method="get" className="flex items-end gap-2">
         <div className="flex flex-col gap-1">
           <label className="text-xs text-ink-secondary">Class</label>
-          <select
+          <Select
             name="classId"
             defaultValue={classId ?? ""}
             className="rounded-sm border border-border px-2 py-1.5 text-sm"
@@ -70,7 +70,7 @@ export default async function TeacherAttendancePage({
                 {name}
               </option>
             ))}
-          </select>
+          </Select>
         </div>
         <Button type="submit" variant="secondary">
           Load class

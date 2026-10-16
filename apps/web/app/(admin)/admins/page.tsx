@@ -59,7 +59,7 @@ export default async function AdminsPage() {
 
       <Link
         href="/people/teachers"
-        className="self-start rounded-md bg-primary px-6 py-3 font-medium text-white hover:bg-primary-dark"
+        className="self-start rounded-md bg-primary px-6 py-3 font-medium text-white hover:bg-primary-dark transition-colors duration-fast ease-standard"
       >
         Continue to people setup
       </Link>

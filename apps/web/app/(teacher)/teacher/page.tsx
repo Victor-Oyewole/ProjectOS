@@ -47,19 +47,19 @@ export default async function TeacherDashboardPage() {
         <div className="flex flex-wrap gap-3">
           <Link
             href="/teacher/assignments"
-            className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary-dark"
+            className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary-dark transition-colors duration-fast ease-standard"
           >
             New assignment
           </Link>
           <Link
             href="/teacher/attendance"
-            className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary-dark"
+            className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary-dark transition-colors duration-fast ease-standard"
           >
             Take attendance
           </Link>
           <Link
             href="/teacher/scores"
-            className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary-dark"
+            className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary-dark transition-colors duration-fast ease-standard"
           >
             Enter scores
           </Link>

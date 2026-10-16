@@ -2,6 +2,7 @@ import { createServerClient, getSessionClaims } from "@schoolos/db";
 import { redirect } from "next/navigation";
 import { ScoreGrid } from "./score-grid";
 import { MilestoneGrid } from "./milestone-grid";
+import { Select } from "@schoolos/ui";
 
 export default async function TeacherScoresPage({
   searchParams,
@@ -121,7 +122,7 @@ export default async function TeacherScoresPage({
       <form method="get" className="flex items-end gap-2">
         <div className="flex flex-col gap-1">
           <label className="text-xs text-ink-secondary">Class / Subject</label>
-          <select
+          <Select
             name="pair"
             defaultValue={pair ?? ""}
             className="rounded-md border border-border px-2 py-1.5 text-sm"
@@ -132,24 +133,24 @@ export default async function TeacherScoresPage({
                 {cs.className} — {cs.subjectName}
               </option>
             ))}
-          </select>
+          </Select>
         </div>
         {isNarrative ? (
           <div className="flex flex-col gap-1">
             <label className="text-xs text-ink-secondary">Term</label>
-            <select name="termId" defaultValue={termId ?? ""} className="rounded-md border border-border px-2 py-1.5 text-sm">
+            <Select name="termId" defaultValue={termId ?? ""} className="rounded-md border border-border px-2 py-1.5 text-sm">
               <option value="">—</option>
               {terms.map((t) => (
                 <option key={t.id} value={t.id}>
                   {t.name}
                 </option>
               ))}
-            </select>
+            </Select>
           </div>
         ) : null}
         <button
           type="submit"
-          className="rounded-sm border border-border px-4 py-1.5 text-sm font-medium hover:bg-primary-light"
+          className="rounded-sm border border-border px-4 py-1.5 text-sm font-medium hover:bg-primary-light transition-colors duration-fast ease-standard"
         >
           Load
         </button>

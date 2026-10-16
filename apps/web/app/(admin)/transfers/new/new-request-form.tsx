@@ -75,14 +75,14 @@ export function NewRequestForm() {
             type="button"
             disabled={isPending}
             onClick={handleSubmit}
-            className="rounded-sm bg-primary px-4 py-1.5 text-sm font-medium text-white hover:bg-primary-dark disabled:opacity-60"
+            className="rounded-sm bg-primary px-4 py-1.5 text-sm font-medium text-white hover:bg-primary-dark disabled:opacity-60 transition-colors duration-fast ease-standard"
           >
             Submit transfer request
           </button>
           <button
             type="button"
             onClick={() => setSchool(null)}
-            className="rounded-md border border-border px-4 py-1.5 text-sm font-medium hover:bg-primary-light"
+            className="rounded-md border border-border px-4 py-1.5 text-sm font-medium hover:bg-primary-light transition-colors duration-fast ease-standard"
           >
             Back
           </button>
@@ -106,7 +106,7 @@ export function NewRequestForm() {
                 <button
                   type="button"
                   onClick={() => setSchool(s)}
-                  className="rounded-md border border-border px-3 py-1 text-xs font-medium hover:bg-primary-light"
+                  className="rounded-md border border-border px-3 py-1 text-xs font-medium hover:bg-primary-light transition-colors duration-fast ease-standard"
                 >
                   Select
                 </button>
@@ -116,7 +116,7 @@ export function NewRequestForm() {
           <button
             type="button"
             onClick={() => setSchoolCandidates(null)}
-            className="self-start text-sm text-ink-secondary hover:text-ink"
+            className="self-start text-sm text-ink-secondary hover:text-ink transition-colors duration-fast ease-standard"
           >
             Search again
           </button>
@@ -139,14 +139,14 @@ export function NewRequestForm() {
           <button
             type="submit"
             disabled={isPending}
-            className="rounded-sm bg-primary px-4 py-1.5 text-sm font-medium text-white hover:bg-primary-dark disabled:opacity-60"
+            className="rounded-sm bg-primary px-4 py-1.5 text-sm font-medium text-white hover:bg-primary-dark disabled:opacity-60 transition-colors duration-fast ease-standard"
           >
             Search school
           </button>
           <button
             type="button"
             onClick={() => setStudent(null)}
-            className="rounded-md border border-border px-4 py-1.5 text-sm font-medium hover:bg-primary-light"
+            className="rounded-md border border-border px-4 py-1.5 text-sm font-medium hover:bg-primary-light transition-colors duration-fast ease-standard"
           >
             Back
           </button>
@@ -172,7 +172,7 @@ export function NewRequestForm() {
               <button
                 type="button"
                 onClick={() => setStudent(c)}
-                className="rounded-md border border-border px-3 py-1 text-xs font-medium hover:bg-primary-light"
+                className="rounded-md border border-border px-3 py-1 text-xs font-medium hover:bg-primary-light transition-colors duration-fast ease-standard"
               >
                 Select
               </button>
@@ -182,7 +182,7 @@ export function NewRequestForm() {
         <button
           type="button"
           onClick={() => setStudentCandidates(null)}
-          className="self-start text-sm text-ink-secondary hover:text-ink"
+          className="self-start text-sm text-ink-secondary hover:text-ink transition-colors duration-fast ease-standard"
         >
           Search again
         </button>
@@ -204,7 +204,7 @@ export function NewRequestForm() {
       <button
         type="submit"
         disabled={isPending}
-        className="rounded-sm bg-primary px-4 py-1.5 text-sm font-medium text-white hover:bg-primary-dark disabled:opacity-60"
+        className="rounded-sm bg-primary px-4 py-1.5 text-sm font-medium text-white hover:bg-primary-dark disabled:opacity-60 transition-colors duration-fast ease-standard"
       >
         Find student
       </button>

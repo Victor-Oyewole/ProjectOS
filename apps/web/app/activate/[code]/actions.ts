@@ -3,6 +3,7 @@
 import { createAdminClient, createServerClient } from "@schoolos/db";
 import { redirect } from "next/navigation";
 import { z } from "zod";
+import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
 
 // Doc 12 "Teacher Activation"/"Family Activation" step 3: "Creates
 // password/PIN" -> step 4: lands on their dashboard. Same auth-user
@@ -26,6 +27,13 @@ export async function activate(formData: FormData): Promise<{ error: string }> {
     return { error: parsed.error.issues[0]?.message ?? "Invalid input" };
   }
   const { code, email, password } = parsed.data;
+
+  // Doc 3 Section 6: rate limiting on auth endpoints. By IP -- same
+  // reasoning as the page-load check above this submits after.
+  const allowed = await checkRateLimit(createAdminClient(), `activate-submit:${await getClientIp()}`, 10, 3600);
+  if (!allowed) {
+    return { error: "Too many attempts. Please wait a while and try again." };
+  }
 
   // Re-validate before creating an account -- the code could have expired
   // or been used in the time between the page loading and this submit.

@@ -37,7 +37,7 @@ export function RecordPaymentForm({
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="rounded-md border border-border px-2 py-1 text-xs font-medium hover:bg-primary-light"
+        className="rounded-md border border-border px-2 py-1 text-xs font-medium hover:bg-primary-light transition-colors duration-fast ease-standard"
       >
         Record payment
       </button>
@@ -86,14 +86,14 @@ export function RecordPaymentForm({
         <button
           type="submit"
           disabled={isPending}
-          className="rounded-sm bg-primary px-3 py-1.5 text-xs font-medium text-white hover:bg-primary-dark disabled:opacity-60"
+          className="rounded-sm bg-primary px-3 py-1.5 text-xs font-medium text-white hover:bg-primary-dark disabled:opacity-60 transition-colors duration-fast ease-standard"
         >
           Save
         </button>
         <button
           type="button"
           onClick={() => setOpen(false)}
-          className="rounded-md border border-border px-3 py-1.5 text-xs font-medium hover:bg-primary-light"
+          className="rounded-md border border-border px-3 py-1.5 text-xs font-medium hover:bg-primary-light transition-colors duration-fast ease-standard"
         >
           Cancel
         </button>

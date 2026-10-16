@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
+import { Select } from "@schoolos/ui";
 import {
   addGradeBand,
   addMilestoneLevel,
@@ -37,7 +38,7 @@ export function AssessmentModelForm({ current }: { current: string }) {
     <form action={formAction} className="flex flex-wrap items-end gap-2">
       <div className="flex flex-col gap-1">
         <label className="text-xs text-ink-secondary">Assessment model</label>
-        <select
+        <Select
           name="assessmentModel"
           defaultValue={current}
           className="rounded-md border border-border px-2 py-1.5 text-sm"
@@ -47,12 +48,12 @@ export function AssessmentModelForm({ current }: { current: string }) {
               {label}
             </option>
           ))}
-        </select>
+        </Select>
       </div>
       <button
         type="submit"
         disabled={isPending}
-        className="rounded-sm bg-primary px-4 py-1.5 text-sm font-medium text-white hover:bg-primary-dark disabled:opacity-60"
+        className="rounded-sm bg-primary px-4 py-1.5 text-sm font-medium text-white hover:bg-primary-dark disabled:opacity-60 transition-colors duration-fast ease-standard"
       >
         Save model
       </button>
@@ -87,7 +88,7 @@ export function AddGradeBandForm() {
       <button
         type="submit"
         disabled={isPending}
-        className="rounded-sm border border-border px-3 py-1.5 text-sm font-medium hover:bg-primary-light disabled:opacity-60"
+        className="rounded-sm border border-border px-3 py-1.5 text-sm font-medium hover:bg-primary-light disabled:opacity-60 transition-colors duration-fast ease-standard"
       >
         Add band
       </button>
@@ -131,7 +132,7 @@ export function AddMilestoneLevelForm() {
       <button
         type="submit"
         disabled={isPending}
-        className="rounded-sm border border-border px-3 py-1.5 text-sm font-medium hover:bg-primary-light disabled:opacity-60"
+        className="rounded-sm border border-border px-3 py-1.5 text-sm font-medium hover:bg-primary-light disabled:opacity-60 transition-colors duration-fast ease-standard"
       >
         Add level
       </button>
@@ -241,7 +242,7 @@ export function NewSessionForm() {
       <button
         type="submit"
         disabled={isPending}
-        className="rounded-sm bg-primary px-4 py-1.5 text-sm font-medium text-white hover:bg-primary-dark disabled:opacity-60"
+        className="rounded-sm bg-primary px-4 py-1.5 text-sm font-medium text-white hover:bg-primary-dark disabled:opacity-60 transition-colors duration-fast ease-standard"
       >
         Add session
       </button>
@@ -288,7 +289,7 @@ export function NewTermForm({ sessionId }: { sessionId: string }) {
       <button
         type="submit"
         disabled={isPending}
-        className="rounded-sm border border-border px-3 py-1.5 text-sm font-medium hover:bg-primary-light disabled:opacity-60"
+        className="rounded-sm border border-border px-3 py-1.5 text-sm font-medium hover:bg-primary-light disabled:opacity-60 transition-colors duration-fast ease-standard"
       >
         Add term
       </button>
@@ -316,7 +317,7 @@ export function NewClassForm() {
       <button
         type="submit"
         disabled={isPending}
-        className="rounded-sm bg-primary px-4 py-1.5 text-sm font-medium text-white hover:bg-primary-dark disabled:opacity-60"
+        className="rounded-sm bg-primary px-4 py-1.5 text-sm font-medium text-white hover:bg-primary-dark disabled:opacity-60 transition-colors duration-fast ease-standard"
       >
         Add class
       </button>
@@ -356,7 +357,7 @@ export function NewSubjectForm({ showCreditWeight, label }: { showCreditWeight?:
       <button
         type="submit"
         disabled={isPending}
-        className="rounded-sm bg-primary px-4 py-1.5 text-sm font-medium text-white hover:bg-primary-dark disabled:opacity-60"
+        className="rounded-sm bg-primary px-4 py-1.5 text-sm font-medium text-white hover:bg-primary-dark disabled:opacity-60 transition-colors duration-fast ease-standard"
       >
         Add {label ? label.toLowerCase() : "subject"}
       </button>
@@ -391,52 +392,52 @@ export function AssignTeacherForm({
     <form action={formAction} className="flex flex-wrap items-end gap-2">
       <div className="flex flex-col gap-1">
         <label className="text-xs text-ink-secondary">Teacher</label>
-        <select name="teacherId" required className="rounded-md border border-border px-2 py-1.5 text-sm">
+        <Select name="teacherId" required className="rounded-md border border-border px-2 py-1.5 text-sm">
           <option value="">—</option>
           {teachers.map((t) => (
             <option key={t.id} value={t.id}>
               {t.name}
             </option>
           ))}
-        </select>
+        </Select>
       </div>
       <div className="flex flex-col gap-1">
         <label className="text-xs text-ink-secondary">Class</label>
-        <select name="classId" required className="rounded-md border border-border px-2 py-1.5 text-sm">
+        <Select name="classId" required className="rounded-md border border-border px-2 py-1.5 text-sm">
           <option value="">—</option>
           {classes.map((c) => (
             <option key={c.id} value={c.id}>
               {c.name}
             </option>
           ))}
-        </select>
+        </Select>
       </div>
       <div className="flex flex-col gap-1">
         <label className="text-xs text-ink-secondary">Subject</label>
-        <select name="subjectId" required className="rounded-md border border-border px-2 py-1.5 text-sm">
+        <Select name="subjectId" required className="rounded-md border border-border px-2 py-1.5 text-sm">
           <option value="">—</option>
           {subjects.map((s) => (
             <option key={s.id} value={s.id}>
               {s.name}
             </option>
           ))}
-        </select>
+        </Select>
       </div>
       <div className="flex flex-col gap-1">
         <label className="text-xs text-ink-secondary">Session</label>
-        <select name="sessionId" required className="rounded-md border border-border px-2 py-1.5 text-sm">
+        <Select name="sessionId" required className="rounded-md border border-border px-2 py-1.5 text-sm">
           <option value="">—</option>
           {sessions.map((s) => (
             <option key={s.id} value={s.id}>
               {s.name}
             </option>
           ))}
-        </select>
+        </Select>
       </div>
       <button
         type="submit"
         disabled={isPending}
-        className="rounded-sm bg-primary px-4 py-1.5 text-sm font-medium text-white hover:bg-primary-dark disabled:opacity-60"
+        className="rounded-sm bg-primary px-4 py-1.5 text-sm font-medium text-white hover:bg-primary-dark disabled:opacity-60 transition-colors duration-fast ease-standard"
       >
         Assign
       </button>
@@ -465,36 +466,36 @@ export function NewAssessmentForm({
     <form action={formAction} className="flex flex-wrap items-end gap-2">
       <div className="flex flex-col gap-1">
         <label className="text-xs text-ink-secondary">Class</label>
-        <select name="classId" required className="rounded-md border border-border px-2 py-1.5 text-sm">
+        <Select name="classId" required className="rounded-md border border-border px-2 py-1.5 text-sm">
           <option value="">—</option>
           {classes.map((c) => (
             <option key={c.id} value={c.id}>
               {c.name}
             </option>
           ))}
-        </select>
+        </Select>
       </div>
       <div className="flex flex-col gap-1">
         <label className="text-xs text-ink-secondary">Subject</label>
-        <select name="subjectId" required className="rounded-md border border-border px-2 py-1.5 text-sm">
+        <Select name="subjectId" required className="rounded-md border border-border px-2 py-1.5 text-sm">
           <option value="">—</option>
           {subjects.map((s) => (
             <option key={s.id} value={s.id}>
               {s.name}
             </option>
           ))}
-        </select>
+        </Select>
       </div>
       <div className="flex flex-col gap-1">
         <label className="text-xs text-ink-secondary">Term</label>
-        <select name="termId" required className="rounded-md border border-border px-2 py-1.5 text-sm">
+        <Select name="termId" required className="rounded-md border border-border px-2 py-1.5 text-sm">
           <option value="">—</option>
           {terms.map((t) => (
             <option key={t.id} value={t.id}>
               {t.name}
             </option>
           ))}
-        </select>
+        </Select>
       </div>
       <div className="flex flex-col gap-1">
         <label className="text-xs text-ink-secondary">Assessment name</label>
@@ -519,7 +520,7 @@ export function NewAssessmentForm({
       <button
         type="submit"
         disabled={isPending}
-        className="rounded-sm bg-primary px-4 py-1.5 text-sm font-medium text-white hover:bg-primary-dark disabled:opacity-60"
+        className="rounded-sm bg-primary px-4 py-1.5 text-sm font-medium text-white hover:bg-primary-dark disabled:opacity-60 transition-colors duration-fast ease-standard"
       >
         Add assessment
       </button>

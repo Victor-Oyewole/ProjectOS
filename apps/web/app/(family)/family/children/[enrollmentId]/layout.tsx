@@ -42,22 +42,22 @@ export default async function ChildLayout({
     <div className="flex flex-col gap-6">
       <h1 className="text-2xl font-semibold">{enrollment.PlatformStudent?.name}</h1>
       <nav className="flex gap-4 border-b border-border text-sm font-medium">
-        <Link href={base} className="px-1 pb-3 hover:text-ink">
+        <Link href={base} className="px-1 pb-3 hover:text-ink transition-colors duration-fast ease-standard">
           Overview
         </Link>
-        <Link href={`${base}/assignments`} className="px-1 pb-3 hover:text-ink">
+        <Link href={`${base}/assignments`} className="px-1 pb-3 hover:text-ink transition-colors duration-fast ease-standard">
           Assignments
         </Link>
-        <Link href={`${base}/attendance`} className="px-1 pb-3 hover:text-ink">
+        <Link href={`${base}/attendance`} className="px-1 pb-3 hover:text-ink transition-colors duration-fast ease-standard">
           Attendance
         </Link>
-        <Link href={`${base}/results`} className="px-1 pb-3 hover:text-ink">
+        <Link href={`${base}/results`} className="px-1 pb-3 hover:text-ink transition-colors duration-fast ease-standard">
           Results
         </Link>
-        <Link href={`${base}/daily-notes`} className="px-1 pb-3 hover:text-ink">
+        <Link href={`${base}/daily-notes`} className="px-1 pb-3 hover:text-ink transition-colors duration-fast ease-standard">
           Daily notes
         </Link>
-        <Link href={`${base}/fees`} className="px-1 pb-3 hover:text-ink">
+        <Link href={`${base}/fees`} className="px-1 pb-3 hover:text-ink transition-colors duration-fast ease-standard">
           Fees
         </Link>
       </nav>

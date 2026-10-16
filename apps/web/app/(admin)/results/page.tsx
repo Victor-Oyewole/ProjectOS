@@ -1,6 +1,6 @@
 import { createServerClient, getSessionClaims } from "@schoolos/db";
 import { redirect } from "next/navigation";
-import { Button, EmptyState, ReportStatusBadge } from "@schoolos/ui";
+import { Button, EmptyState, ReportStatusBadge, Select } from "@schoolos/ui";
 import {
   CompileNarrativeReportsButton,
   ComputeResultsButton,
@@ -129,25 +129,25 @@ export default async function ResultsPage({
       <form method="get" className="flex flex-wrap items-end gap-2">
         <div className="flex flex-col gap-1">
           <label className="text-xs text-ink-secondary">Class</label>
-          <select name="classId" defaultValue={classId ?? ""} className="rounded-sm border border-border px-2 py-1.5 text-sm">
+          <Select name="classId" defaultValue={classId ?? ""} className="rounded-sm border border-border px-2 py-1.5 text-sm">
             <option value="">—</option>
             {(classes ?? []).map((c) => (
               <option key={c.class_id} value={c.class_id}>
                 {c.name}
               </option>
             ))}
-          </select>
+          </Select>
         </div>
         <div className="flex flex-col gap-1">
           <label className="text-xs text-ink-secondary">Term</label>
-          <select name="termId" defaultValue={termId ?? ""} className="rounded-sm border border-border px-2 py-1.5 text-sm">
+          <Select name="termId" defaultValue={termId ?? ""} className="rounded-sm border border-border px-2 py-1.5 text-sm">
             <option value="">—</option>
             {terms.map((t) => (
               <option key={t.id} value={t.id}>
                 {t.name}
               </option>
             ))}
-          </select>
+          </Select>
         </div>
         <Button type="submit" variant="secondary">
           Load

@@ -1151,6 +1151,24 @@ export type Database = {
         }
         Relationships: []
       }
+      RateLimitBucket: {
+        Row: {
+          attempt_count: number
+          bucket_key: string
+          window_start: string
+        }
+        Insert: {
+          attempt_count?: number
+          bucket_key: string
+          window_start?: string
+        }
+        Update: {
+          attempt_count?: number
+          bucket_key?: string
+          window_start?: string
+        }
+        Relationships: []
+      }
       RetentionPolicy: {
         Row: {
           action_on_expiry: string
@@ -1907,8 +1925,11 @@ export type Database = {
         Returns: string
       }
       admin_bulk_add_families: { Args: { p_rows: Json }; Returns: Json }
+      admin_bulk_add_families_impl: { Args: { p_rows: Json }; Returns: Json }
       admin_bulk_add_students: { Args: { p_rows: Json }; Returns: Json }
+      admin_bulk_add_students_impl: { Args: { p_rows: Json }; Returns: Json }
       admin_bulk_add_teachers: { Args: { p_rows: Json }; Returns: Json }
+      admin_bulk_add_teachers_impl: { Args: { p_rows: Json }; Returns: Json }
       admin_compile_narrative_reports: {
         Args: { p_class_id: string; p_term_id: string }
         Returns: Json
@@ -1975,6 +1996,15 @@ export type Database = {
       auth_platform_admin_id: { Args: never; Returns: string }
       auth_school_id: { Args: never; Returns: string }
       auth_teacher_id: { Args: never; Returns: string }
+      check_rate_limit: {
+        Args: {
+          p_key: string
+          p_max_attempts: number
+          p_window_seconds: number
+        }
+        Returns: boolean
+      }
+      cleanup_rate_limit_buckets: { Args: never; Returns: undefined }
       consume_activation_code: {
         Args: { p_auth_user_id: string; p_code: string }
         Returns: Json

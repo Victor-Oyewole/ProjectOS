@@ -15,7 +15,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(({ invalid, classN
       ref={ref}
       aria-invalid={invalid || undefined}
       className={cn(
-        "min-h-[44px] w-full rounded-sm border bg-surface px-3 py-2 text-base text-ink",
+        "min-h-[44px] w-full rounded-sm border bg-surface px-3 py-2 text-base text-ink transition-shadow duration-fast ease-standard",
         "focus:outline-none focus:ring-2 focus:ring-primary",
         invalid ? "border-danger" : "border-border",
         className,

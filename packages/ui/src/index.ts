@@ -4,6 +4,7 @@ export { Button, type ButtonProps, type ButtonVariant } from "./primitives/Butto
 export { Card } from "./primitives/Card";
 export { Badge, type BadgeProps, type BadgeTone } from "./primitives/Badge";
 export { Input, type InputProps } from "./primitives/Input";
+export { Select, type SelectProps } from "./primitives/Select";
 export { Skeleton } from "./primitives/Skeleton";
 
 export { Field, type FieldProps } from "./composite/Field";

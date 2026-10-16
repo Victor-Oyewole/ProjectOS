@@ -43,7 +43,7 @@ export default async function ReviewTransferRequestPage({
     <main className="mx-auto flex min-h-screen max-w-2xl flex-col gap-6 px-4 py-12">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-semibold">Transfer request</h1>
-        <Link href="/transfers" className="text-sm text-ink-secondary hover:text-ink">
+        <Link href="/transfers" className="text-sm text-ink-secondary hover:text-ink transition-colors duration-fast ease-standard">
           Back to transfers
         </Link>
       </div>

@@ -45,7 +45,7 @@ export function ReviewForm({ requestId }: { requestId: string }) {
         <button
           type="submit"
           disabled={approvePending}
-          className="self-start rounded-sm bg-primary px-4 py-1.5 text-sm font-medium text-white hover:bg-primary-dark disabled:opacity-60"
+          className="self-start rounded-sm bg-primary px-4 py-1.5 text-sm font-medium text-white hover:bg-primary-dark disabled:opacity-60 transition-colors duration-fast ease-standard"
         >
           Approve & generate transfer package
         </button>
@@ -62,7 +62,7 @@ export function ReviewForm({ requestId }: { requestId: string }) {
         <button
           type="submit"
           disabled={denyPending}
-          className="self-start rounded-sm border border-danger/30 px-4 py-1.5 text-sm font-medium text-danger hover:bg-danger/10 disabled:opacity-60"
+          className="self-start rounded-sm border border-danger/30 px-4 py-1.5 text-sm font-medium text-danger hover:bg-danger/10 disabled:opacity-60 transition-colors duration-fast ease-standard"
         >
           Deny request
         </button>

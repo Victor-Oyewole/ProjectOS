@@ -36,7 +36,7 @@ export default async function TransfersPage() {
         </div>
         <Link
           href="/transfers/new"
-          className="inline-flex min-h-[44px] items-center justify-center rounded-sm bg-primary px-5 py-3 text-sm font-medium text-white hover:bg-primary-dark"
+          className="inline-flex min-h-[44px] items-center justify-center rounded-sm bg-primary px-5 py-3 text-sm font-medium text-white hover:bg-primary-dark transition-colors duration-fast ease-standard"
         >
           New transfer request
         </Link>
@@ -62,7 +62,7 @@ export default async function TransfersPage() {
                   {r.status === "Pending" ? (
                     <Link
                       href={`/transfers/${r.request_id}`}
-                      className="rounded-sm border border-primary px-3 py-1 text-xs font-medium text-primary hover:bg-primary-light"
+                      className="rounded-sm border border-primary px-3 py-1 text-xs font-medium text-primary hover:bg-primary-light transition-colors duration-fast ease-standard"
                     >
                       Review
                     </Link>

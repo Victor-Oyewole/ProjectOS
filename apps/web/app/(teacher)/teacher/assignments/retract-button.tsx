@@ -26,7 +26,7 @@ export function RetractButton({ assignmentId }: { assignmentId: string }) {
             type="button"
             disabled={isPending}
             onClick={handleRetract}
-            className="rounded-sm border border-danger/30 px-2 py-1 text-xs font-medium text-danger hover:bg-danger/10 disabled:opacity-60"
+            className="rounded-sm border border-danger/30 px-2 py-1 text-xs font-medium text-danger hover:bg-danger/10 disabled:opacity-60 transition-colors duration-fast ease-standard"
           >
             Confirm retract
           </button>
@@ -34,7 +34,7 @@ export function RetractButton({ assignmentId }: { assignmentId: string }) {
             type="button"
             disabled={isPending}
             onClick={() => setConfirming(false)}
-            className="rounded-md border border-border px-2 py-1 text-xs font-medium hover:bg-primary-light"
+            className="rounded-md border border-border px-2 py-1 text-xs font-medium hover:bg-primary-light transition-colors duration-fast ease-standard"
           >
             Cancel
           </button>
@@ -48,7 +48,7 @@ export function RetractButton({ assignmentId }: { assignmentId: string }) {
     <button
       type="button"
       onClick={() => setConfirming(true)}
-      className="rounded-md border border-border px-2 py-1 text-xs font-medium hover:bg-primary-light"
+      className="rounded-md border border-border px-2 py-1 text-xs font-medium hover:bg-primary-light transition-colors duration-fast ease-standard"
     >
       Retract
     </button>
