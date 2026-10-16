@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import * as Sentry from "@sentry/nextjs";
-import { createBrowserClient, getSessionClaims } from "@schoolos/db";
+import { createBrowserClient, getSessionClaims } from "@schoolos/db/client";
 
 // Doc 3 Section 6: "capturing both client and server errors, with user
 // role/school_id attached as context (never PII beyond what's necessary
